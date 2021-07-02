@@ -3,6 +3,7 @@ name = "amdfand"
 version = "1.0.0"
 edition = "2018"
 description = "AMDGPU fan control service"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 serde = { version = "1.0.126", features = ["derive"] }
