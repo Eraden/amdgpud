@@ -28,16 +28,15 @@ impl FromStr for Card {
             .parse::<u32>()
             .map_err(|e| AmdFanError::InvalidSuffix(format!("{:?}", e)))
             .map(|n| Card(n))?;
-        match std::fs::read_to_string(format!("{}/{}/device/vendor", ROOT_DIR, card)) {
-            Ok(vendor) => {
+        std::fs::read_to_string(format!("{}/{}/device/vendor", ROOT_DIR, card))
+            .map_err(|_| AmdFanError::FailedReadVendor)
+            .and_then(|vendor| {
                 if vendor.trim() == "0x1002" {
                     Ok(card)
                 } else {
                     Err(AmdFanError::NotAmdCard)
                 }
-            }
-            Err(_) => Err(AmdFanError::FailedReadVendor),
-        }
+            })
     }
 }
 
