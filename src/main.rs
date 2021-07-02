@@ -16,6 +16,8 @@ pub enum AmdFanError {
     InvalidPrefix,
     InputTooShort,
     InvalidSuffix(String),
+    NotAmdCard,
+    FailedReadVendor,
 }
 
 #[derive(Debug)]

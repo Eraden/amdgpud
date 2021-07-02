@@ -1,4 +1,4 @@
-use crate::{AmdFanError, CONFIG_PATH};
+use crate::{AmdFanError, CONFIG_PATH, ROOT_DIR};
 use log::LevelFilter;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::Formatter;
@@ -24,10 +24,20 @@ impl FromStr for Card {
         if value.len() < 5 {
             return Err(AmdFanError::InputTooShort);
         }
-        value[4..]
+        let card = value[4..]
             .parse::<u32>()
             .map_err(|e| AmdFanError::InvalidSuffix(format!("{:?}", e)))
-            .map(|n| Card(n))
+            .map(|n| Card(n))?;
+        match std::fs::read_to_string(format!("{}/{}/device/vendor", ROOT_DIR, card)) {
+            Ok(vendor) => {
+                if vendor.trim() == "0x1002" {
+                    Ok(card)
+                } else {
+                    Err(AmdFanError::NotAmdCard)
+                }
+            }
+            Err(_) => Err(AmdFanError::FailedReadVendor),
+        }
     }
 }
 
@@ -59,6 +69,13 @@ impl<'de> Deserialize<'de> for Card {
                     Err(AmdFanError::InvalidSuffix(s)) => Err(E::custom(s)),
                     Err(AmdFanError::InputTooShort) => Err(E::custom(format!(
                         "{:?} must have at least 5 characters",
+                        value
+                    ))),
+                    Err(AmdFanError::NotAmdCard) => {
+                        Err(E::custom(format!("{} is not an AMD GPU", value)))
+                    }
+                    Err(AmdFanError::FailedReadVendor) => Err(E::custom(format!(
+                        "Failed to read vendor file for {}",
                         value
                     ))),
                 }
