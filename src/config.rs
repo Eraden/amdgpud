@@ -1,11 +1,11 @@
-use crate::{AmdFanError, CONFIG_PATH, ROOT_DIR};
+use crate::{AmdFanError, CONFIG_PATH};
 use log::LevelFilter;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::Formatter;
 use std::io::ErrorKind;
 use std::str::FromStr;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Card(pub u32);
 
 impl std::fmt::Display for Card {
@@ -24,19 +24,10 @@ impl FromStr for Card {
         if value.len() < 5 {
             return Err(AmdFanError::InputTooShort);
         }
-        let card = value[4..]
+        value[4..]
             .parse::<u32>()
             .map_err(|e| AmdFanError::InvalidSuffix(format!("{:?}", e)))
-            .map(|n| Card(n))?;
-        std::fs::read_to_string(format!("{}/{}/device/vendor", ROOT_DIR, card))
-            .map_err(|_| AmdFanError::FailedReadVendor)
-            .and_then(|vendor| {
-                if vendor.trim() == "0x1002" {
-                    Ok(card)
-                } else {
-                    Err(AmdFanError::NotAmdCard)
-                }
-            })
+            .map(|n| Card(n))
     }
 }
 
@@ -291,6 +282,32 @@ pub fn load_config() -> std::io::Result<Config> {
     }
 
     Ok(config)
+}
+
+#[cfg(test)]
+mod parse_config {
+    use super::*;
+    use serde::Deserialize;
+
+    #[derive(Deserialize, PartialEq, Debug)]
+    pub struct Foo {
+        card: Card,
+    }
+
+    #[test]
+    fn parse_card0() {
+        assert_eq!("card0".parse::<Card>(), Ok(Card(0)))
+    }
+
+    #[test]
+    fn parse_card1() {
+        assert_eq!("card1".parse::<Card>(), Ok(Card(1)))
+    }
+
+    #[test]
+    fn toml_card0() {
+        assert_eq!(toml::from_str("card = 'card0'"), Ok(Foo { card: Card(0) }))
+    }
 }
 
 #[cfg(test)]

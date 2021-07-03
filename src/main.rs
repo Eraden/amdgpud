@@ -12,6 +12,7 @@ static CONFIG_PATH: &str = "/etc/amdfand/config.toml";
 static ROOT_DIR: &str = "/sys/class/drm";
 static HW_MON_DIR: &str = "device/hwmon";
 
+#[derive(Debug, PartialEq)]
 pub enum AmdFanError {
     InvalidPrefix,
     InputTooShort,
@@ -90,6 +91,19 @@ impl HwMon {
     pub fn is_fan_automatic(&self) -> bool {
         self.read("pwm1_enable")
             .map(|s| s.as_str() == "2")
+            .unwrap_or_default()
+    }
+
+    pub fn is_amd(&self) -> bool {
+        std::fs::read_to_string(format!("{}/{}/device/vendor", ROOT_DIR, self.card))
+            .map_err(|_| AmdFanError::FailedReadVendor)
+            .map(|vendor| {
+                if vendor.trim() == "0x1002" {
+                    true
+                } else {
+                    false
+                }
+            })
             .unwrap_or_default()
     }
 
@@ -255,6 +269,7 @@ fn controllers(config: &Config, filter: bool) -> std::io::Result<Vec<CardControl
                     .is_some()
         })
         .map(|card| CardController::new(card).unwrap())
+        .filter(|controller| !filter || controller.hw_mon.is_amd())
         .filter(|reader| {
             !filter
                 || reader
