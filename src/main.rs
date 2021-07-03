@@ -180,7 +180,7 @@ pub struct Service {
 
 #[derive(Debug, Options)]
 pub struct Switcher {
-    #[options(help = "Help message")]
+    #[options(help = "Print help message")]
     help: bool,
     #[options(help = "GPU Card number")]
     card: Option<u32>,
@@ -210,6 +210,8 @@ pub enum Command {
 pub struct Opts {
     #[options(help = "Help message")]
     help: bool,
+    #[options(help = "Print version")]
+    version: bool,
     #[options(command)]
     command: Option<Command>,
 }
@@ -352,20 +354,17 @@ fn main() -> std::io::Result<()> {
 
     let opts: Opts = Opts::parse_args_default_or_exit();
 
+    if opts.version {
+        println!("{}", env!("CARGO_PKG_VERSION"));
+        std::process::exit(0);
+    }
+
     match opts.command {
-        None => return Ok(()),
-        Some(Command::Monitor(_)) => {
-            monitor_cards(config)?;
-        }
-        Some(Command::Service(_)) => {
-            service(config)?;
-        }
-        Some(Command::SetAutomatic(switcher)) => {
-            change_mode(switcher, FanMode::Automatic, config)?;
-        }
-        Some(Command::SetManual(switcher)) => {
-            change_mode(switcher, FanMode::Manual, config)?;
-        }
+        None => service(config),
+        Some(Command::Monitor(_)) => monitor_cards(config),
+        Some(Command::Service(_)) => service(config),
+        Some(Command::SetAutomatic(switcher)) => change_mode(switcher, FanMode::Automatic, config),
+        Some(Command::SetManual(switcher)) => change_mode(switcher, FanMode::Manual, config),
         Some(Command::Available(_)) => {
             println!("Available cards");
             controllers(&config, false)?.into_iter().for_each(|card| {
@@ -375,8 +374,7 @@ fn main() -> std::io::Result<()> {
                     card.hw_mon.name().unwrap_or_default()
                 );
             });
+            Ok(())
         }
     }
-
-    Ok(())
 }
