@@ -11,20 +11,25 @@ env:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build
-      run: cargo build --release --verbose
+    - name: Add target
+      run: rustup target install x86_64-unknown-linux-musl
     - name: Run tests
       run: cargo test --verbose
+    - name: Build
+      run: cargo build --release --verbose --target=x86_64-unknown-linux-musl
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2.2.4
       with:
         # Artifact name
-        name: amdfand
+        name: amdfand-${{ matrix.os }}
         # A file, directory or wildcard pattern that describes what to upload
-        path: ./target/release/amdfand
+        path: ./target/x86_64-unknown-linux-musl/release/amdfand
         # The desired behavior if no files are found using the provided path.
