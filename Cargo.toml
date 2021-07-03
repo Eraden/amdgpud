@@ -1,6 +1,6 @@
 [package]
 name = "amdfand"
-version = "1.0.2"
+version = "1.0.3"
 edition = "2018"
 description = "AMDGPU fan control service"
 license = "MIT OR Apache-2.0"
