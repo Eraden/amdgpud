@@ -8,6 +8,9 @@ keywords = ["hardware", "amdgpu"]
 categories = ["hardware-support"]
 repository = "https://github.com/Eraden/amdgpud"
 
+[profile.release]
+panic = "abort"
+
 [dependencies]
 serde = { version = "1.0.126", features = ["derive"] }
 toml = { version = "0.5.8" }

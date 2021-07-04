@@ -4,21 +4,81 @@ extern crate log;
 
 use std::io::ErrorKind;
 
-use crate::config::{load_config, Card, Config};
+use crate::config::{load_config, Card, Config, GpuState};
 use gumdrop::Options;
+use std::str::FromStr;
 
 static CONFIG_PATH: &str = "/etc/amdfand/config.toml";
 
 static ROOT_DIR: &str = "/sys/class/drm";
 static HW_MON_DIR: &str = "device/hwmon";
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub enum AmdFanError {
+    Io(std::io::Error),
     InvalidPrefix,
     InputTooShort,
     InvalidSuffix(String),
     NotAmdCard,
     FailedReadVendor,
+    // Profile
+    InvalidGpuProfile(String),
+    NoCard,
+    NoProfile,
+    // parse state
+    StateNoPosition,
+    StateInvalidPosition(String),
+    StateMissingColon,
+    StateNoFrequency,
+    StateInvalidFrequency(String),
+    StateNoUnit,
+}
+
+impl From<std::io::Error> for AmdFanError {
+    fn from(io: std::io::Error) -> Self {
+        AmdFanError::Io(io)
+    }
+}
+
+impl std::fmt::Display for AmdFanError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AmdFanError::InvalidPrefix => f.write_str("Card name must starts with \'card\'"),
+            AmdFanError::InputTooShort => f.write_str("Card name must have at least 5 characters"),
+            AmdFanError::InvalidSuffix(s) => f.write_fmt(format_args!(
+                "Card name must have number after \'card\' prefix. {}",
+                s.as_str()
+            )),
+            AmdFanError::NotAmdCard => f.write_str("Unexpected non-AMD card"),
+            AmdFanError::FailedReadVendor => f.write_str("Unable to read card vendor"),
+            AmdFanError::InvalidGpuProfile(s) => {
+                f.write_fmt(format_args!("Unknown GPU profile {}", s))
+            }
+            AmdFanError::StateNoPosition => {
+                f.write_str("State does not have position. Please see documentation")
+            }
+            AmdFanError::StateInvalidPosition(s) => f.write_fmt(format_args!(
+                "State have invalid value for position. Must be a number. {}",
+                s
+            )),
+            AmdFanError::StateMissingColon => {
+                f.write_str("State does not contains \':\' after position")
+            }
+            AmdFanError::StateNoFrequency => f.write_str("State does not have frequency"),
+            AmdFanError::StateInvalidFrequency(s) => f.write_fmt(format_args!(
+                "State contains invalid value for frequency. {}",
+                s
+            )),
+            AmdFanError::StateNoUnit => {
+                f.write_str("State does not have \'Mhz\' after frequency value.")
+            }
+            AmdFanError::NoCard => {
+                f.write_str("You must specify which card which profile you wish to change")
+            }
+            AmdFanError::NoProfile => f.write_str("You must specify profile you wish to apply!"),
+            AmdFanError::Io(io) => f.write_fmt(format_args!("Failed to access io. {}", io)),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -173,6 +233,65 @@ impl CardController {
             .find(|name| name.starts_with("hwmon"))
             .ok_or_else(|| std::io::Error::from(ErrorKind::NotFound))
     }
+
+    pub fn change_profile(&self, profile: GpuProfile) -> Result<(), AmdFanError> {
+        let path = self.device_path().join("power_dpm_force_performance_level");
+        std::fs::write(path, profile.to_str())?;
+        Ok(())
+    }
+    pub fn print_states(&self) -> Result<(), AmdFanError> {
+        println!("{}", self.hw_mon.card);
+
+        println!("  {:^33}", StateFile::Clock.name());
+        println!("  | position | frequency | active |");
+        println!("  |----------|-----------|--------|");
+        for state in self.read_states(StateFile::Clock)? {
+            println!(
+                "  | {position:>8} | {frequency:>9} | {active:^6} |",
+                position = state.position,
+                frequency = state.frequency,
+                active = state.active
+            );
+        }
+
+        println!();
+
+        println!("  {:^33}", StateFile::Clock.name());
+        println!("  | position | frequency | active |");
+        println!("  |----------|-----------|--------|");
+        for state in self.read_states(StateFile::Memory)? {
+            println!(
+                "  | {position:>8} | {frequency:>9} | {active:^6} |",
+                position = state.position,
+                frequency = state.frequency,
+                active = state.active
+            );
+        }
+
+        Ok(())
+    }
+
+    fn read_states(&self, file: StateFile) -> Result<Vec<GpuState>, AmdFanError> {
+        let mut states: Vec<Result<GpuState, AmdFanError>> = self
+            .read(file.file_name())?
+            .lines()
+            .map(|line| line.parse::<GpuState>())
+            .collect();
+        if let Some(idx) = states.iter().position(|r| r.is_err()) {
+            return states.remove(idx).map(|_| vec![]);
+        }
+        Ok(states.into_iter().map(|r| r.unwrap()).collect())
+    }
+
+    fn read(&self, name: &str) -> Result<String, AmdFanError> {
+        std::fs::read_to_string(self.device_path().join(name)).map_err(AmdFanError::from)
+    }
+
+    fn device_path(&self) -> std::path::PathBuf {
+        std::path::Path::new(ROOT_DIR)
+            .join(self.hw_mon.card.to_string())
+            .join("device")
+    }
 }
 
 pub enum FanMode {
@@ -206,6 +325,78 @@ pub struct AvailableCards {
     help: bool,
 }
 
+pub enum StateFile {
+    /// pp_dpm_sclk
+    Clock,
+    /// pp_dpm_mclk
+    Memory,
+}
+
+impl StateFile {
+    pub fn file_name(&self) -> &str {
+        match self {
+            StateFile::Clock => "pp_dpm_sclk",
+            StateFile::Memory => "pp_dpm_mclk",
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        match self {
+            StateFile::Clock => "Clock frequency",
+            StateFile::Memory => "Memory frequency",
+        }
+    }
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub enum GpuProfile {
+    /// Set GPU voltage to automatic
+    Auto,
+    /// Set GPU voltage to low (under-volt)
+    Low,
+    /// Set GPU voltage to high (over-volt)
+    High,
+}
+
+impl FromStr for GpuProfile {
+    type Err = AmdFanError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "auto" => Ok(GpuProfile::Auto),
+            "low" => Ok(GpuProfile::Low),
+            "high" => Ok(GpuProfile::High),
+            _ => Err(AmdFanError::InvalidGpuProfile(String::from(s))),
+        }
+    }
+}
+
+impl GpuProfile {
+    pub fn to_str(&self) -> &str {
+        match self {
+            GpuProfile::Auto => "auto",
+            GpuProfile::Low => "low",
+            GpuProfile::High => "high",
+        }
+    }
+}
+
+#[derive(Debug, Options)]
+pub struct ChangeProfile {
+    #[options(help = "Help message")]
+    help: bool,
+    #[options(help = "GPU Card number", free)]
+    card: Option<Card>,
+    #[options(help = "Change voltage. Available options: auto, low, high", free)]
+    profile: Option<GpuProfile>,
+}
+
+#[derive(Debug, Options)]
+pub struct StatesPrinter {
+    #[options(help = "Help message")]
+    help: bool,
+}
+
 #[derive(Debug, Options)]
 pub enum Command {
     #[options(help = "Print current temp and fan speed")]
@@ -218,6 +409,10 @@ pub enum Command {
     SetManual(Switcher),
     #[options(help = "Print available cards")]
     Available(AvailableCards),
+    #[options(help = "Change GPU profile")]
+    Profile(ChangeProfile),
+    #[options(help = "print GPU Card states")]
+    AvailableStates(StatesPrinter),
 }
 
 #[derive(Options)]
@@ -357,7 +552,25 @@ fn monitor_cards(config: Config) -> std::io::Result<()> {
     }
 }
 
-fn main() -> std::io::Result<()> {
+fn change_profile(profile: ChangeProfile, config: Config) -> Result<(), AmdFanError> {
+    let card = profile.card.ok_or_else(|| AmdFanError::NoCard)?;
+    let controller = controllers(&config, true)?
+        .into_iter()
+        .find(|c| c.hw_mon.card == card)
+        .expect("Card not found!");
+    controller.change_profile(profile.profile.ok_or_else(|| AmdFanError::NoProfile)?)?;
+    Ok(())
+}
+
+fn print_states(_printer: StatesPrinter, config: Config) -> Result<(), AmdFanError> {
+    let cards = controllers(&config, true)?;
+    for card in cards {
+        card.print_states()?;
+    }
+    Ok(())
+}
+
+fn run() -> Result<(), AmdFanError> {
     if std::fs::read("/etc/amdfand").map_err(|e| e.kind() == ErrorKind::NotFound) == Err(true) {
         std::fs::create_dir_all("/etc/amdfand")?;
     }
@@ -381,7 +594,7 @@ fn main() -> std::io::Result<()> {
         Some(Command::SetAutomatic(switcher)) => change_mode(switcher, FanMode::Automatic, config),
         Some(Command::SetManual(switcher)) => change_mode(switcher, FanMode::Manual, config),
         Some(Command::Available(_)) => {
-            println!("Available cards");
+            println!("Available cards:");
             controllers(&config, false)?.into_iter().for_each(|card| {
                 println!(
                     " * {:6>} - {}",
@@ -390,6 +603,19 @@ fn main() -> std::io::Result<()> {
                 );
             });
             Ok(())
+        }
+        Some(Command::Profile(profile)) => return change_profile(profile, config),
+        Some(Command::AvailableStates(printer)) => return print_states(printer, config),
+    }?;
+    Ok(())
+}
+
+fn main() {
+    match run() {
+        Ok(_) => {}
+        Err(e) => {
+            log::error!("{}", e);
+            std::process::exit(1)
         }
     }
 }

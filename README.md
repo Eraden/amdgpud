@@ -7,6 +7,7 @@ Available commands:
 * `set-automatic`  - Switch to GPU automatic fan speed control
 * `set-manual`     - Switch to GPU manual fan speed control
 * `available`      - Print available cards
+* `profile`        - Change GPU voltage profile
 
 #### amdfand set-automatic | set-manual [OPTIONS]
 
@@ -14,6 +15,13 @@ Optional arguments:
 
 * -h, --help       Help message
 * -c, --card CARD  GPU Card number
+
+#### amdfand profile [CARD] [PROFILE]
+
+Arguments:
+
+* CARD          - card name, for example `card0` (list can be obtained with `amdfand available` command)
+* PROFILE       - predefined GPU profile. Available options: `auto`, `low`, `high`
 
 ## Usage
 

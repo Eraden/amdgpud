@@ -64,10 +64,7 @@ impl<'de> Deserialize<'de> for Card {
                     Err(AmdFanError::NotAmdCard) => {
                         Err(E::custom(format!("{} is not an AMD GPU", value)))
                     }
-                    Err(AmdFanError::FailedReadVendor) => Err(E::custom(format!(
-                        "Failed to read vendor file for {}",
-                        value
-                    ))),
+                    _ => unreachable!(),
                 }
             }
         }
@@ -81,6 +78,81 @@ impl Serialize for Card {
         S: Serializer,
     {
         serializer.serialize_str(&self.to_string())
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub enum ActiveState {
+    Active,
+    Inactive,
+}
+
+impl std::fmt::Display for ActiveState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ActiveState::Active => f.write_str("active"),
+            ActiveState::Inactive => f.write_str("      "),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub struct GpuState {
+    pub position: u32,
+    pub frequency: u32,
+    pub active: ActiveState,
+}
+
+impl FromStr for GpuState {
+    type Err = AmdFanError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut line = s.chars().peekable();
+        let mut position = String::new();
+        while let Some(c) = line.next_if(|c| c.is_numeric()) {
+            position.push(c);
+        }
+        if position.is_empty() {
+            return Err(AmdFanError::StateNoPosition);
+        }
+        let position = position
+            .parse()
+            .map_err(|e| AmdFanError::StateInvalidPosition(format!("{}", e)))?;
+
+        line.next()
+            .filter(|c| *c == ':')
+            .ok_or_else(|| AmdFanError::StateMissingColon)?;
+
+        while line.next_if(|c| *c == ' ').is_some() {}
+
+        let mut frequency = String::new();
+        while let Some(c) = line.next_if(|c| c.is_numeric()) {
+            frequency.push(c);
+        }
+        if frequency.is_empty() {
+            return Err(AmdFanError::StateNoFrequency);
+        }
+        let frequency = frequency
+            .parse()
+            .map_err(|e| AmdFanError::StateInvalidFrequency(format!("{}", e)))?;
+
+        line.next_if(|c| *c == 'M')
+            .and(line.next_if(|c| *c == 'h'))
+            .and(line.next_if(|c| *c == 'z'))
+            .ok_or_else(|| AmdFanError::StateNoUnit)?;
+
+        while line.next_if(|c| *c == ' ').is_some() {}
+
+        let active = match line.next_if(|c| *c == '*') {
+            Some(_) => ActiveState::Active,
+            _ => ActiveState::Inactive,
+        };
+
+        Ok(GpuState {
+            position,
+            frequency,
+            active,
+        })
     }
 }
 
@@ -285,6 +357,60 @@ pub fn load_config() -> std::io::Result<Config> {
 }
 
 #[cfg(test)]
+mod parse_states {
+    use crate::config::{ActiveState, GpuState};
+
+    #[test]
+    fn multiple() {
+        let buffer = r#"
+0: 300Mhz
+1: 800Mhz *
+2: 2100Mhz
+"#
+        .trim()
+        .to_string();
+        let mut lines = buffer.lines();
+        assert_eq!(
+            lines
+                .next()
+                .map(|s| s.parse::<GpuState>())
+                .unwrap()
+                .unwrap(),
+            GpuState {
+                position: 0,
+                frequency: 300,
+                active: ActiveState::Inactive
+            }
+        );
+        assert_eq!(
+            lines
+                .next()
+                .map(|s| s.parse::<GpuState>())
+                .unwrap()
+                .unwrap(),
+            GpuState {
+                position: 1,
+                frequency: 800,
+                active: ActiveState::Active
+            }
+        );
+        assert_eq!(
+            lines
+                .next()
+                .map(|s| s.parse::<GpuState>())
+                .unwrap()
+                .unwrap(),
+            GpuState {
+                position: 2,
+                frequency: 2100,
+                active: ActiveState::Inactive
+            }
+        );
+        assert_eq!(lines.next(), None);
+    }
+}
+
+#[cfg(test)]
 mod parse_config {
     use super::*;
     use serde::Deserialize;
@@ -296,12 +422,12 @@ mod parse_config {
 
     #[test]
     fn parse_card0() {
-        assert_eq!("card0".parse::<Card>(), Ok(Card(0)))
+        assert_eq!("card0".parse::<Card>().unwrap(), Card(0))
     }
 
     #[test]
     fn parse_card1() {
-        assert_eq!("card1".parse::<Card>(), Ok(Card(1)))
+        assert_eq!("card1".parse::<Card>().unwrap(), Card(1))
     }
 
     #[test]
