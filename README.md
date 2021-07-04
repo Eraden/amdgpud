@@ -1,3 +1,5 @@
+![GitHub](https://img.shields.io/github/license/Eraden/amdgpud)
+
 # AMDGPU Fan control service
 
 Available commands:
@@ -64,7 +66,7 @@ temp = 80.0
 speed = 100
 ```
 
-## License
+## :bookmark: License
 
 This work is dual-licensed under Apache 2.0 and MIT.
 You can choose between one of them if you use this work.
