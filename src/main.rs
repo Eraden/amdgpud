@@ -3,6 +3,7 @@ mod config;
 extern crate log;
 
 use std::io::ErrorKind;
+use std::cmp::{min, max};
 
 use crate::config::{load_config, Card, Config};
 use gumdrop::Options;
@@ -25,8 +26,8 @@ pub enum AmdFanError {
 pub struct HwMon {
     card: Card,
     name: String,
-    fan_min: Option<u32>,
-    fan_max: Option<u32>,
+    pwm_min: Option<u32>,
+    pwm_max: Option<u32>,
 }
 
 impl HwMon {
@@ -34,8 +35,8 @@ impl HwMon {
         Self {
             card: card.clone(),
             name: String::from(name),
-            fan_min: None,
-            fan_max: None,
+            pwm_min: None,
+            pwm_max: None,
         }
     }
 
@@ -51,33 +52,33 @@ impl HwMon {
         self.read("name")
     }
 
-    pub fn fan_min(&mut self) -> u32 {
-        if self.fan_min.is_none() {
-            self.fan_min = Some(
-                self.read("fan1_min")
+    pub fn pwm_min(&mut self) -> u32 {
+        if self.pwm_min.is_none() {
+            self.pwm_min = Some(
+                self.read("pwm1_min")
                     .unwrap_or_default()
                     .parse()
                     .unwrap_or(0),
             )
         };
-        self.fan_min.unwrap_or(0)
+        self.pwm_min.unwrap_or(0)
     }
 
-    pub fn fan_max(&mut self) -> u32 {
-        if self.fan_max.is_none() {
-            self.fan_max = Some(
-                self.read("fan1_max")
+    pub fn pwm_max(&mut self) -> u32 {
+        if self.pwm_max.is_none() {
+            self.pwm_max = Some(
+                self.read("pwm1_max")
                     .unwrap_or_default()
                     .parse()
                     .unwrap_or(255),
             )
         };
-        self.fan_max.unwrap_or(255)
+        self.pwm_max.unwrap_or(255)
     }
 
-    pub fn fan_speed(&self) -> std::io::Result<u64> {
-        self.read("fan1_input")?.parse().map_err(|_e| {
-            log::warn!("Read from gpu monitor failed. Invalid fan speed");
+    pub fn pwm(&self) -> std::io::Result<u32> {
+        self.read("pwm1")?.parse().map_err(|_e| {
+            log::warn!("Read from gpu monitor failed. Invalid pwm value");
             std::io::Error::from(ErrorKind::InvalidInput)
         })
     }
@@ -115,11 +116,19 @@ impl HwMon {
         self.write("pwm1_enable", 2)
     }
 
-    pub fn set_speed(&self, speed: u64) -> std::io::Result<()> {
+    pub fn set_pwm(&self, value: u32) -> std::io::Result<()> {
         if self.is_fan_automatic() {
             self.set_manual()?;
         }
-        self.write("pwm1", speed)
+        self.write("pwm1", value as u64)
+    }
+    
+    pub fn set_speed(&mut self, speed: f64) -> std::io::Result<()> {
+        let mut pwm = (speed / 100f64 * 255f64).round() as u32;
+        // stay in the range
+        pwm = max(pwm, self.pwm_min());
+        pwm = min(pwm, self.pwm_max());
+        self.set_pwm(pwm)
     }
 
     fn read(&self, name: &str) -> std::io::Result<String> {
@@ -289,11 +298,8 @@ fn service(config: Config) -> std::io::Result<()> {
             let gpu_temp = controller.hw_mon.gpu_temp().unwrap_or_default();
 
             let speed = config.speed_for_temp(gpu_temp);
-            if controller.hw_mon.fan_min() > speed || controller.hw_mon.fan_max() < speed {
-                continue;
-            }
 
-            if let Err(e) = controller.hw_mon.set_speed(speed as u64) {
+            if let Err(e) = controller.hw_mon.set_speed(speed) {
                 log::error!("Failed to change speed to {}. {:?}", speed, e);
             }
             controller.last_temp = gpu_temp;
@@ -342,15 +348,15 @@ fn monitor_cards(config: Config) -> std::io::Result<()> {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
         for card in controllers.iter_mut() {
             println!(
-                "Card {:3} | Temp     | fan speed |  MAX |  MIN ",
+                "Card {:3} | Temp     | current PWM |  MIN |  MAX ",
                 card.hw_mon.card.0
             );
             println!(
-                "         | {:>5.2}    | {:>9} | {:>4} | {:>4}",
+                "         | {:>5.2}    | {:>11} | {:>4} | {:>4}",
                 card.hw_mon.gpu_temp().unwrap_or_default(),
-                card.hw_mon.fan_speed().unwrap_or_default(),
-                card.hw_mon.fan_min(),
-                card.hw_mon.fan_max(),
+                card.hw_mon.pwm().unwrap_or_default(),
+                card.hw_mon.pwm_min(),
+                card.hw_mon.pwm_max(),
             );
         }
         std::thread::sleep(std::time::Duration::from_secs(4));

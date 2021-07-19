@@ -35,35 +35,35 @@ cards = ["card0"]
 
 [[speed_matrix]]
 temp = 4.0
-speed = 4
+speed = 4.0
 
 [[speed_matrix]]
 temp = 30.0
-speed = 33
+speed = 33.0
 
 [[speed_matrix]]
 temp = 45.0
-speed = 50
+speed = 50.0
 
 [[speed_matrix]]
 temp = 60.0
-speed = 66
+speed = 66.0
 
 [[speed_matrix]]
 temp = 65.0
-speed = 69
+speed = 69.0
 
 [[speed_matrix]]
 temp = 70.0
-speed = 75
+speed = 75.0
 
 [[speed_matrix]]
 temp = 75.0
-speed = 89
+speed = 89.0
 
 [[speed_matrix]]
 temp = 80.0
-speed = 100
+speed = 100.0
 ```
 
 ## :bookmark: License
