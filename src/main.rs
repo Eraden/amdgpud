@@ -150,11 +150,11 @@ impl HwMon {
         self.write("pwm1_enable", 2)
     }
 
-    pub fn set_speed(&self, speed: u64) -> std::io::Result<()> {
+    pub fn set_speed(&self, pwm: u64) -> std::io::Result<()> {
         if self.is_fan_automatic() {
             self.set_manual()?;
         }
-        self.write("pwm1", speed)
+        self.write("pwm1", pwm)
     }
 
     fn read(&self, name: &str) -> std::io::Result<String> {
@@ -323,7 +323,8 @@ fn service(config: Config) -> std::io::Result<()> {
         for controller in controllers.iter_mut() {
             let gpu_temp = controller.hw_mon.gpu_temp().unwrap_or_default();
 
-            let target_pwm = config.speed_for_temp(gpu_temp);
+            let speed = config.speed_for_temp(gpu_temp);
+            let target_pwm = (speed as f32 * 2.55).round() as u32;
             if controller.hw_mon.pwm_min() > target_pwm || controller.hw_mon.pwm_max() < target_pwm {
                 continue;
             }
@@ -377,18 +378,17 @@ fn monitor_cards(config: Config) -> std::io::Result<()> {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
         for card in controllers.iter_mut() {
             println!(
-                "Card {:3} | Temp     |  RPM |  MIN |  MAX |  PWM ({}-{})",
-                card.hw_mon.card.to_string().replace("card", ""),
-                card.hw_mon.pwm_min(),
-                card.hw_mon.pwm_max()
+                "Card {:3} | Temp     |  RPM |  MIN |  MAX |  PWM |   %",
+                card.hw_mon.card.to_string().replace("card", "")
             );
             println!(
-                "         | {:>5.2}    | {:>4} | {:>4} | {:>4} | {:>4}",
+                "         | {:>5.2}    | {:>4} | {:>4} | {:>4} | {:>4} | {:>3}",
                 card.hw_mon.gpu_temp().unwrap_or_default(),
                 card.hw_mon.fan_speed().unwrap_or_default(),
                 card.hw_mon.fan_min(),
                 card.hw_mon.fan_max(),
                 card.hw_mon.pwm_speed().unwrap_or_default(),
+                (card.hw_mon.pwm_speed().unwrap_or_default() as f32 / 2.55).round(),
             );
         }
         std::thread::sleep(std::time::Duration::from_secs(4));
