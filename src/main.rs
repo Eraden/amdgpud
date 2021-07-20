@@ -3,7 +3,6 @@ mod config;
 extern crate log;
 
 use std::io::ErrorKind;
-use std::cmp::{min, max};
 
 use crate::config::{load_config, Card, Config};
 use gumdrop::Options;
@@ -20,6 +19,12 @@ pub enum AmdFanError {
     InvalidSuffix(String),
     NotAmdCard,
     FailedReadVendor,
+}
+
+// linear mapping from the xrange to the yrange
+fn linear_map(x: f64, x1: f64, x2: f64, y1: f64, y2: f64) -> f64 {
+    let m = (y2 - y1) / (x2 - x1);
+    m * (x - x1) + y1
 }
 
 #[derive(Debug)]
@@ -124,10 +129,9 @@ impl HwMon {
     }
     
     pub fn set_speed(&mut self, speed: f64) -> std::io::Result<()> {
-        let mut pwm = (speed / 100f64 * 255f64).round() as u32;
-        // stay in the range
-        pwm = max(pwm, self.pwm_min());
-        pwm = min(pwm, self.pwm_max());
+        let min = self.pwm_min() as f64;
+        let max = self.pwm_max() as f64;
+        let pwm = linear_map(speed, 0f64, 100f64, min, max).round() as u32;
         self.set_pwm(pwm)
     }
 
