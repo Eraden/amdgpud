@@ -64,7 +64,7 @@ impl HwMon {
                     .unwrap_or(0),
             )
         };
-        self.fan_min.unwrap_or(0)
+        self.fan_min.unwrap_or_default()
     }
 
     pub fn fan_max(&mut self) -> u32 {
@@ -95,7 +95,7 @@ impl HwMon {
                     .unwrap_or(0),
             )
         };
-        self.pwm_min.unwrap_or(0)
+        self.pwm_min.unwrap_or_default()
     }
 
     pub fn pwm_max(&mut self) -> u32 {
