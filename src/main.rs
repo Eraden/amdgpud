@@ -21,12 +21,16 @@ pub enum AmdFanError {
     FailedReadVendor,
 }
 
+// linear mapping from the xrange to the yrange
+fn linear_map(x: f64, x1: f64, x2: f64, y1: f64, y2: f64) -> f64 {
+    let m = (y2 - y1) / (x2 - x1);
+    m * (x - x1) + y1
+}
+
 #[derive(Debug)]
 pub struct HwMon {
     card: Card,
     name: String,
-    fan_min: Option<u32>,
-    fan_max: Option<u32>,
     pwm_min: Option<u32>,
     pwm_max: Option<u32>,
 }
@@ -36,8 +40,6 @@ impl HwMon {
         Self {
             card: card.clone(),
             name: String::from(name),
-            fan_min: None,
-            fan_max: None,
             pwm_min: None,
             pwm_max: None,
         }
@@ -53,37 +55,6 @@ impl HwMon {
 
     fn name(&self) -> std::io::Result<String> {
         self.read("name")
-    }
-
-    pub fn fan_min(&mut self) -> u32 {
-        if self.fan_min.is_none() {
-            self.fan_min = Some(
-                self.read("fan1_min")
-                    .unwrap_or_default()
-                    .parse()
-                    .unwrap_or(0),
-            )
-        };
-        self.fan_min.unwrap_or_default()
-    }
-
-    pub fn fan_max(&mut self) -> u32 {
-        if self.fan_max.is_none() {
-            self.fan_max = Some(
-                self.read("fan1_max")
-                    .unwrap_or_default()
-                    .parse()
-                    .unwrap_or(1500),
-            )
-        };
-        self.fan_max.unwrap_or(1500)
-    }
-
-    pub fn fan_speed(&self) -> std::io::Result<u64> {
-        self.read("fan1_input")?.parse().map_err(|_e| {
-            log::warn!("Read from gpu monitor failed. Invalid fan speed");
-            std::io::Error::from(ErrorKind::InvalidInput)
-        })
     }
 
     pub fn pwm_min(&mut self) -> u32 {
@@ -110,6 +81,13 @@ impl HwMon {
         self.pwm_max.unwrap_or(255)
     }
 
+    pub fn pwm(&self) -> std::io::Result<u32> {
+        self.read("pwm1")?.parse().map_err(|_e| {
+            log::warn!("Read from gpu monitor failed. Invalid pwm value");
+            std::io::Error::from(ErrorKind::InvalidInput)
+        })
+    }
+
     pub fn pwm_speed(&self) -> std::io::Result<u64> {
         self.read("pwm1")?.parse().map_err(|_e| {
             log::warn!("Read from gpu monitor failed. Invalid fan speed");
@@ -132,13 +110,7 @@ impl HwMon {
     pub fn is_amd(&self) -> bool {
         std::fs::read_to_string(format!("{}/{}/device/vendor", ROOT_DIR, self.card))
             .map_err(|_| AmdFanError::FailedReadVendor)
-            .map(|vendor| {
-                if vendor.trim() == "0x1002" {
-                    true
-                } else {
-                    false
-                }
-            })
+            .map(|vendor| vendor.trim() == "0x1002")
             .unwrap_or_default()
     }
 
@@ -150,11 +122,18 @@ impl HwMon {
         self.write("pwm1_enable", 2)
     }
 
-    pub fn set_speed(&self, pwm: u64) -> std::io::Result<()> {
+    pub fn set_pwm(&self, value: u32) -> std::io::Result<()> {
         if self.is_fan_automatic() {
             self.set_manual()?;
         }
-        self.write("pwm1", pwm)
+        self.write("pwm1", value as u64)
+    }
+    
+    pub fn set_speed(&mut self, speed: f64) -> std::io::Result<()> {
+        let min = self.pwm_min() as f64;
+        let max = self.pwm_max() as f64;
+        let pwm = linear_map(speed, 0f64, 100f64, min, max).round() as u32;
+        self.set_pwm(pwm)
     }
 
     fn read(&self, name: &str) -> std::io::Result<String> {
@@ -329,7 +308,7 @@ fn service(config: Config) -> std::io::Result<()> {
                 continue;
             }
 
-            if let Err(e) = controller.hw_mon.set_speed(target_pwm as u64) {
+            if let Err(e) = controller.hw_mon.set_speed(target_pwm as f64) {
                 log::error!("Failed to change speed to {}. {:?}", target_pwm, e);
             }
             controller.last_temp = gpu_temp;
@@ -384,9 +363,9 @@ fn monitor_cards(config: Config) -> std::io::Result<()> {
             println!(
                 "         | {:>5.2}    | {:>4} | {:>4} | {:>4} | {:>4} | {:>3}",
                 card.hw_mon.gpu_temp().unwrap_or_default(),
-                card.hw_mon.fan_speed().unwrap_or_default(),
-                card.hw_mon.fan_min(),
-                card.hw_mon.fan_max(),
+                card.hw_mon.pwm_speed().unwrap_or_default(),
+                card.hw_mon.pwm_min(),
+                card.hw_mon.pwm_max(),
                 card.hw_mon.pwm_speed().unwrap_or_default(),
                 (card.hw_mon.pwm_speed().unwrap_or_default() as f32 / 2.55).round(),
             );

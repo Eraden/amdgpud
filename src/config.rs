@@ -87,7 +87,7 @@ impl Serialize for Card {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MatrixPoint {
     pub temp: f64,
-    pub speed: u32,
+    pub speed: f64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
@@ -131,54 +131,29 @@ impl Config {
         &self.cards
     }
 
-    pub fn speed_for_temp(&self, temp: f64) -> u32 {
+    pub fn speed_for_temp(&self, temp: f64) -> f64 {
         let idx = match self.speed_matrix.iter().rposition(|p| p.temp <= temp) {
             Some(idx) => idx,
-            _ => return 4,
+            _ => return self.min_speed(),
         };
 
-        match (idx, self.speed_matrix.len() - 1) {
-            (0, _) => self.min_speed(),
-            (current, max) if current == max => self.max_speed(),
-            _ => {
-                if self.is_exact_point(idx, temp) {
-                    return self.speed_matrix.get(idx).map(|p| p.speed).unwrap_or(4);
-                }
-                let max = match self.speed_matrix.get(idx + 1) {
-                    Some(p) => p,
-                    _ => return 4,
-                };
-                let min = match self.speed_matrix.get(idx) {
-                    Some(p) => p,
-                    _ => return 4,
-                };
-                let speed_diff = max.speed as f64 - min.speed as f64;
-                let temp_diff = max.temp as f64 - min.temp as f64;
-                let increase_by =
-                    (((temp as f64 - min.temp as f64) / temp_diff) * speed_diff).round();
-                min.speed + increase_by as u32
-            }
+        if idx == self.speed_matrix.len() - 1 {
+            return self.max_speed();
         }
+
+        crate::linear_map(temp, self.speed_matrix[idx].temp, self.speed_matrix[idx+1].temp, self.speed_matrix[idx].speed, self.speed_matrix[idx+1].speed)
     }
 
     pub fn log_level(&self) -> LogLevel {
         self.log_level
     }
 
-    fn min_speed(&self) -> u32 {
-        self.speed_matrix.first().map(|p| p.speed).unwrap_or(4)
+    fn min_speed(&self) -> f64 {
+        self.speed_matrix.first().map(|p| p.speed).unwrap_or(0f64)
     }
 
-    fn max_speed(&self) -> u32 {
-        self.speed_matrix.last().map(|p| p.speed).unwrap_or(100)
-    }
-
-    fn is_exact_point(&self, idx: usize, temp: f64) -> bool {
-        static DELTA: f64 = 0.001f64;
-        self.speed_matrix
-            .get(idx)
-            .map(|p| p.temp - DELTA < temp && p.temp + DELTA > temp)
-            .unwrap_or(false)
+    fn max_speed(&self) -> f64 {
+        self.speed_matrix.last().map(|p| p.speed).unwrap_or(100f64)
     }
 }
 
@@ -190,35 +165,35 @@ impl Default for Config {
             speed_matrix: vec![
                 MatrixPoint {
                     temp: 4f64,
-                    speed: 4,
+                    speed: 4f64,
                 },
                 MatrixPoint {
                     temp: 30f64,
-                    speed: 33,
+                    speed: 33f64,
                 },
                 MatrixPoint {
                     temp: 45f64,
-                    speed: 50,
+                    speed: 50f64,
                 },
                 MatrixPoint {
                     temp: 60f64,
-                    speed: 66,
+                    speed: 66f64,
                 },
                 MatrixPoint {
                     temp: 65f64,
-                    speed: 69,
+                    speed: 69f64,
                 },
                 MatrixPoint {
                     temp: 70f64,
-                    speed: 75,
+                    speed: 75f64,
                 },
                 MatrixPoint {
                     temp: 75f64,
-                    speed: 89,
+                    speed: 89f64,
                 },
                 MatrixPoint {
                     temp: 80f64,
-                    speed: 100,
+                    speed: 100f64,
                 },
             ],
         }
@@ -239,24 +214,15 @@ pub fn load_config() -> std::io::Result<Config> {
         }
     };
 
-    if config.speed_matrix.iter().fold(
-        1000,
-        |n, point| if point.speed < n { point.speed } else { n },
-    ) < 4
-    {
-        log::error!("Due to driver bug lowest fan speed must be greater or equal 4");
-        return Err(std::io::Error::from(ErrorKind::InvalidData));
-    }
-
     let mut last_point: Option<&MatrixPoint> = None;
 
     for matrix_point in config.speed_matrix.iter() {
-        if matrix_point.speed <= 0 {
-            log::error!("Fan speed can's be below 0 found {}", matrix_point.speed);
+        if matrix_point.speed < 0f64 {
+            log::error!("Fan speed can't be below 0.0 found {}", matrix_point.speed);
             return Err(std::io::Error::from(ErrorKind::InvalidData));
         }
-        if matrix_point.speed > 100 {
-            log::error!("Fan speed can's be above 100 found {}", matrix_point.speed);
+        if matrix_point.speed > 100f64 {
+            log::error!("Fan speed can't be above 100.0 found {}", matrix_point.speed);
             return Err(std::io::Error::from(ErrorKind::InvalidData));
         }
         if let Some(last_point) = last_point {
@@ -317,13 +283,13 @@ mod speed_for_temp {
     #[test]
     fn below_minimal() {
         let config = Config::default();
-        assert_eq!(config.speed_for_temp(1f64), 4);
+        assert_eq!(config.speed_for_temp(1f64), 4f64);
     }
 
     #[test]
     fn minimal() {
         let config = Config::default();
-        assert_eq!(config.speed_for_temp(4f64), 4);
+        assert_eq!(config.speed_for_temp(4f64), 4f64);
     }
 
     #[test]
@@ -331,7 +297,7 @@ mod speed_for_temp {
         let config = Config::default();
         // 45 -> 50
         // 60 -> 66
-        assert_eq!(config.speed_for_temp(46f64), 51);
+        assert_eq!(config.speed_for_temp(46f64).round(), 51f64);
     }
 
     #[test]
@@ -339,7 +305,7 @@ mod speed_for_temp {
         let config = Config::default();
         // 45 -> 50
         // 60 -> 66
-        assert_eq!(config.speed_for_temp(58f64), 64);
+        assert_eq!(config.speed_for_temp(58f64).round(), 64f64);
     }
 
     #[test]
@@ -347,24 +313,24 @@ mod speed_for_temp {
         let config = Config::default();
         // 45 -> 50
         // 60 -> 66
-        assert_eq!(config.speed_for_temp(59f64), 65);
+        assert_eq!(config.speed_for_temp(59f64).round(), 65f64);
     }
 
     #[test]
     fn average() {
         let config = Config::default();
-        assert_eq!(config.speed_for_temp(60f64), 66);
+        assert_eq!(config.speed_for_temp(60f64), 66f64);
     }
 
     #[test]
     fn max() {
         let config = Config::default();
-        assert_eq!(config.speed_for_temp(80f64), 100);
+        assert_eq!(config.speed_for_temp(80f64), 100f64);
     }
 
     #[test]
     fn above_max() {
         let config = Config::default();
-        assert_eq!(config.speed_for_temp(160f64), 100);
+        assert_eq!(config.speed_for_temp(160f64), 100f64);
     }
 }
