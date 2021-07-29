@@ -308,7 +308,7 @@ fn service(config: Config) -> std::io::Result<()> {
                 continue;
             }
 
-            if let Err(e) = controller.hw_mon.set_speed(target_pwm as u64) {
+            if let Err(e) = controller.hw_mon.set_speed(target_pwm) {
                 log::error!("Failed to change speed to {}. {:?}", target_pwm, e);
             }
             controller.last_temp = gpu_temp;
@@ -363,7 +363,7 @@ fn monitor_cards(config: Config) -> std::io::Result<()> {
             println!(
                 "         | {:>5.2}    | {:>4} | {:>4} | {:>4} | {:>4} | {:>3}",
                 card.hw_mon.gpu_temp().unwrap_or_default(),
-                card.hw_mon.fan_speed().unwrap_or_default(),
+                card.hw_mon.pwm_speed().unwrap_or_default(),
                 card.hw_mon.pwm_min(),
                 card.hw_mon.pwm_max(),
                 card.hw_mon.pwm_speed().unwrap_or_default(),
