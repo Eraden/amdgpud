@@ -308,7 +308,7 @@ fn service(config: Config) -> std::io::Result<()> {
                 continue;
             }
 
-            if let Err(e) = controller.hw_mon.set_speed(target_pwm as f32) {
+            if let Err(e) = controller.hw_mon.set_speed(target_pwm as f64) {
                 log::error!("Failed to change speed to {}. {:?}", target_pwm, e);
             }
             controller.last_temp = gpu_temp;
