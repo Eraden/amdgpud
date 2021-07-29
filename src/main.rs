@@ -66,7 +66,7 @@ impl HwMon {
                     .unwrap_or(0),
             )
         };
-        self.pwm_min.unwrap_or(0)
+        self.pwm_min.unwrap_or_default()
     }
 
     pub fn pwm_max(&mut self) -> u32 {
@@ -88,6 +88,13 @@ impl HwMon {
         })
     }
 
+    pub fn pwm_speed(&self) -> std::io::Result<u64> {
+        self.read("pwm1")?.parse().map_err(|_e| {
+            log::warn!("Read from gpu monitor failed. Invalid fan speed");
+            std::io::Error::from(ErrorKind::InvalidInput)
+        })
+    }
+
     pub fn is_fan_manual(&self) -> bool {
         self.read("pwm1_enable")
             .map(|s| s.as_str() == "1")
@@ -103,13 +110,7 @@ impl HwMon {
     pub fn is_amd(&self) -> bool {
         std::fs::read_to_string(format!("{}/{}/device/vendor", ROOT_DIR, self.card))
             .map_err(|_| AmdFanError::FailedReadVendor)
-            .map(|vendor| {
-                if vendor.trim() == "0x1002" {
-                    true
-                } else {
-                    false
-                }
-            })
+            .map(|vendor| vendor.trim() == "0x1002")
             .unwrap_or_default()
     }
 
@@ -302,9 +303,13 @@ fn service(config: Config) -> std::io::Result<()> {
             let gpu_temp = controller.hw_mon.gpu_temp().unwrap_or_default();
 
             let speed = config.speed_for_temp(gpu_temp);
+            let target_pwm = (speed as f32 * 2.55).round() as u32;
+            if controller.hw_mon.pwm_min() > target_pwm || controller.hw_mon.pwm_max() < target_pwm {
+                continue;
+            }
 
-            if let Err(e) = controller.hw_mon.set_speed(speed) {
-                log::error!("Failed to change speed to {}. {:?}", speed, e);
+            if let Err(e) = controller.hw_mon.set_speed(target_pwm as u64) {
+                log::error!("Failed to change speed to {}. {:?}", target_pwm, e);
             }
             controller.last_temp = gpu_temp;
         }
@@ -352,15 +357,17 @@ fn monitor_cards(config: Config) -> std::io::Result<()> {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
         for card in controllers.iter_mut() {
             println!(
-                "Card {:3} | Temp     | current PWM |  MIN |  MAX ",
-                card.hw_mon.card.0
+                "Card {:3} | Temp     |  RPM |  MIN |  MAX |  PWM |   %",
+                card.hw_mon.card.to_string().replace("card", "")
             );
             println!(
-                "         | {:>5.2}    | {:>11} | {:>4} | {:>4}",
+                "         | {:>5.2}    | {:>4} | {:>4} | {:>4} | {:>4} | {:>3}",
                 card.hw_mon.gpu_temp().unwrap_or_default(),
-                card.hw_mon.pwm().unwrap_or_default(),
+                card.hw_mon.fan_speed().unwrap_or_default(),
                 card.hw_mon.pwm_min(),
                 card.hw_mon.pwm_max(),
+                card.hw_mon.pwm_speed().unwrap_or_default(),
+                (card.hw_mon.pwm_speed().unwrap_or_default() as f32 / 2.55).round(),
             );
         }
         std::thread::sleep(std::time::Duration::from_secs(4));
