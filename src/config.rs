@@ -1,5 +1,4 @@
 use crate::{AmdFanError, CONFIG_PATH};
-use log::LevelFilter;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::Formatter;
 use std::io::ErrorKind;
@@ -52,7 +51,7 @@ impl<'de> Deserialize<'de> for Card {
                 E: de::Error,
             {
                 match value.parse::<Card>() {
-                    Ok(card) => Ok(card.0),
+                    Ok(card) => Ok(*card),
                     Err(AmdFanError::InvalidPrefix) => {
                         Err(E::custom(format!("expect cardX but got {}", value)))
                     }
@@ -68,6 +67,7 @@ impl<'de> Deserialize<'de> for Card {
                         "Failed to read vendor file for {}",
                         value
                     ))),
+                    _ => unreachable!(),
                 }
             }
         }
@@ -81,6 +81,14 @@ impl Serialize for Card {
         S: Serializer,
     {
         serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl std::ops::Deref for Card {
+    type Target = u32;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
@@ -106,15 +114,15 @@ pub enum LogLevel {
     Trace,
 }
 
-impl From<LogLevel> for LevelFilter {
-    fn from(level: LogLevel) -> Self {
-        match level {
-            LogLevel::Off => LevelFilter::Off,
-            LogLevel::Error => LevelFilter::Error,
-            LogLevel::Warn => LevelFilter::Warn,
-            LogLevel::Info => LevelFilter::Info,
-            LogLevel::Debug => LevelFilter::Debug,
-            LogLevel::Trace => LevelFilter::Trace,
+impl LogLevel {
+    pub fn to_str(&self) -> &str {
+        match self {
+            LogLevel::Off => "OFF",
+            LogLevel::Error => "ERROR",
+            LogLevel::Warn => "WARN",
+            LogLevel::Info => "INFO",
+            LogLevel::Debug => "DEBUG",
+            LogLevel::Trace => "TRACE",
         }
     }
 }
@@ -141,7 +149,13 @@ impl Config {
             return self.max_speed();
         }
 
-        crate::linear_map(temp, self.speed_matrix[idx].temp, self.speed_matrix[idx+1].temp, self.speed_matrix[idx].speed, self.speed_matrix[idx+1].speed)
+        crate::linear_map(
+            temp,
+            self.speed_matrix[idx].temp,
+            self.speed_matrix[idx + 1].temp,
+            self.speed_matrix[idx].speed,
+            self.speed_matrix[idx + 1].speed,
+        )
     }
 
     pub fn log_level(&self) -> LogLevel {
@@ -222,7 +236,10 @@ pub fn load_config() -> std::io::Result<Config> {
             return Err(std::io::Error::from(ErrorKind::InvalidData));
         }
         if matrix_point.speed > 100f64 {
-            log::error!("Fan speed can't be above 100.0 found {}", matrix_point.speed);
+            log::error!(
+                "Fan speed can't be above 100.0 found {}",
+                matrix_point.speed
+            );
             return Err(std::io::Error::from(ErrorKind::InvalidData));
         }
         if let Some(last_point) = last_point {
