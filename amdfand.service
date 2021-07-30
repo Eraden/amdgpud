@@ -1,8 +1,11 @@
 [Unit]
 Description=amdfan controller
 Requires=graphical.target
+
 [Service]
 ExecStart=/usr/bin/amdfand service
-Restart=always
+Restart=on-failure
+RestartSec=5s
+
 [Install]
-Alias=default.target
+WantedBy=graphical.target
