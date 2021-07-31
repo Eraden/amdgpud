@@ -30,7 +30,7 @@ impl std::fmt::Display for AmdFanError {
         match self {
             AmdFanError::InvalidPrefix => f.write_str("Card must starts with `card`."),
             AmdFanError::InputTooShort => f.write_str(
-                "Card must starts with `card` and ends with number. Given name is too short.",
+                "Card must start with `card` and ends with a number. The given name is too short.",
             ),
             AmdFanError::InvalidSuffix(s) => {
                 f.write_fmt(format_args!("Value after `card` is invalid {}", s))
