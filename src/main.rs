@@ -57,28 +57,28 @@ pub struct HwMon {
     temp_inputs: Vec<String>,
 }
 
-/// pulse width modulation fan control minimum level (0)
-static PULSE_WIDTH_MODULATION_MIN: &str = "pwm1_min";
-
-/// pulse width modulation fan control maximum level (255)
-static PULSE_WIDTH_MODULATION_MAX: &str = "pwm1_max";
-
-/// pulse width modulation fan level (0-255)
-static PULSE_WIDTH_MODULATION: &str = "pwm1";
-
-/// pulse width modulation fan control method (0: no fan speed control, 1: manual fan speed control using pwm interface, 2: automatic fan speed control)
-static PULSE_WIDTH_MODULATION_ENABLED: &str = "pwm1_enable";
-
 mod hw_mon {
     use std::io::Error as IoErr;
 
     use crate::config::Card;
-    use crate::{
-        linear_map, AmdFanError, HwMon, HW_MON_DIR, PULSE_WIDTH_MODULATION,
-        PULSE_WIDTH_MODULATION_ENABLED, PULSE_WIDTH_MODULATION_MAX, PULSE_WIDTH_MODULATION_MIN,
-        ROOT_DIR,
-    };
+    use crate::{linear_map, AmdFanError, HwMon, HW_MON_DIR, ROOT_DIR};
     use std::io::ErrorKind;
+
+    /// pulse width modulation fan control minimum level (0)
+    const PULSE_WIDTH_MODULATION_MIN: &str = "pwm1_min";
+
+    /// pulse width modulation fan control maximum level (255)
+    const PULSE_WIDTH_MODULATION_MAX: &str = "pwm1_max";
+
+    /// pulse width modulation fan level (0-255)
+    const PULSE_WIDTH_MODULATION: &str = "pwm1";
+
+    /// pulse width modulation fan control method (0: no fan speed control, 1: manual fan speed control using pwm interface, 2: automatic fan speed control)
+    const PULSE_WIDTH_MODULATION_MODE: &str = "pwm1_enable";
+
+    // static PULSE_WIDTH_MODULATION_DISABLED: &str = "0";
+    const PULSE_WIDTH_MODULATION_AUTO: &str = "2";
+    const PULSE_WIDTH_MODULATION_MANUAL: &str = "1";
 
     impl HwMon {
         pub fn new(card: &Card, name: &str) -> Self {
@@ -131,14 +131,14 @@ mod hw_mon {
 
         pub fn pwm_min(&mut self) -> u32 {
             if self.pwm_min.is_none() {
-                self.pwm_min = Some(self.value_or_fallback(PULSE_WIDTH_MODULATION_MIN, 0));
+                self.pwm_min = Some(self.value_or(PULSE_WIDTH_MODULATION_MIN, 0));
             };
             self.pwm_min.unwrap_or_default()
         }
 
         pub fn pwm_max(&mut self) -> u32 {
             if self.pwm_max.is_none() {
-                self.pwm_max = Some(self.value_or_fallback(PULSE_WIDTH_MODULATION_MAX, 255));
+                self.pwm_max = Some(self.value_or(PULSE_WIDTH_MODULATION_MAX, 255));
             };
             self.pwm_max.unwrap_or(255)
         }
@@ -151,14 +151,14 @@ mod hw_mon {
         }
 
         pub fn is_fan_manual(&self) -> bool {
-            self.read(PULSE_WIDTH_MODULATION_ENABLED)
-                .map(|s| s.as_str() == "1")
+            self.read(PULSE_WIDTH_MODULATION_MODE)
+                .map(|s| s.as_str() == PULSE_WIDTH_MODULATION_MANUAL)
                 .unwrap_or_default()
         }
 
         pub fn is_fan_automatic(&self) -> bool {
-            self.read(PULSE_WIDTH_MODULATION_ENABLED)
-                .map(|s| s.as_str() == "2")
+            self.read(PULSE_WIDTH_MODULATION_MODE)
+                .map(|s| s.as_str() == PULSE_WIDTH_MODULATION_AUTO)
                 .unwrap_or_default()
         }
 
@@ -215,7 +215,7 @@ mod hw_mon {
         }
 
         #[inline]
-        fn value_or_fallback<R: std::str::FromStr>(&self, name: &str, fallback: R) -> R {
+        fn value_or<R: std::str::FromStr>(&self, name: &str, fallback: R) -> R {
             self.read(name)
                 .ok()
                 .and_then(|s| s.parse().ok())
@@ -364,15 +364,15 @@ fn service(config: Config) -> std::io::Result<()> {
     loop {
         for hw_mon in controllers.iter_mut() {
             let gpu_temp = hw_mon.max_gpu_temp().unwrap_or_default();
-            log::info!("Current {} temperature: {}", hw_mon.card, gpu_temp);
+            log::debug!("Current {} temperature: {}", hw_mon.card, gpu_temp);
             let last = *cache.entry(*hw_mon.card).or_insert(1_000f64);
 
             if ((last - 0.001f64)..(last + 0.001f64)).contains(&gpu_temp) {
-                log::info!("Temperature didn't change");
+                log::debug!("Temperature didn't change");
                 continue;
             };
             let speed = config.speed_for_temp(gpu_temp);
-            log::info!("Resolved speed {:.2}", speed);
+            log::debug!("Resolved speed {:.2}", speed);
 
             if let Err(e) = hw_mon.set_speed(speed) {
                 log::error!("Failed to change speed to {}. {:?}", speed, e);
