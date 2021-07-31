@@ -368,7 +368,7 @@ fn service(config: Config) -> std::io::Result<()> {
             let last = *cache.entry(*hw_mon.card).or_insert(1_000f64);
 
             if ((last - 0.001f64)..(last + 0.001f64)).contains(&gpu_temp) {
-                log::info!("temperature didn't changed");
+                log::info!("Temperature didn't change");
                 continue;
             };
             let speed = config.speed_for_temp(gpu_temp);
