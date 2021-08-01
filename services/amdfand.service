@@ -1,8 +1,9 @@
 [Unit]
 Description=amdfan controller
-Requires=graphical.target
+After=sysinit.target local-fs.target
 [Service]
-ExecStart=/usr/local/bin/amdfand service
-Restart=always
+Restart=on-failure
+RestartSec=4
+ExecStart=/usr/bin/amdfand service
 [Install]
 WantedBy=multi-user.target
