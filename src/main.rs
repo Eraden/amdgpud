@@ -152,7 +152,7 @@ fn service(config: Config) -> std::io::Result<()> {
             log::debug!("Current {} temperature: {}", hw_mon.card, gpu_temp);
             let last = *cache.entry(*hw_mon.card).or_insert(1_000f64);
 
-            if ((last - 0.001f64)..(last + 0.001f64)).contains(&gpu_temp) {
+            if (last - gpu_temp).abs() < 0.001f64 {
                 log::debug!("Temperature didn't change");
                 continue;
             };

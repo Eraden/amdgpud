@@ -121,17 +121,17 @@ impl HwMon {
         self.write("pwm1_enable", 2)
     }
 
-    pub fn set_pwm(&self, value: u32) -> std::io::Result<()> {
+    pub fn set_pwm(&self, value: u64) -> std::io::Result<()> {
         if self.is_fan_automatic() {
             self.set_manual()?;
         }
-        self.write("pwm1", value as u64)
+        self.write("pwm1", value)
     }
 
     pub fn set_speed(&mut self, speed: f64) -> std::io::Result<()> {
         let min = self.pwm_min() as f64;
         let max = self.pwm_max() as f64;
-        let pwm = linear_map(speed, 0f64, 100f64, min, max).round() as u32;
+        let pwm = linear_map(speed, 0f64, 100f64, min, max).round() as u64;
         self.set_pwm(pwm)
     }
 

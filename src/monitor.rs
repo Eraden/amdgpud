@@ -48,14 +48,16 @@ pub fn verbose(config: Config) -> std::io::Result<()> {
         for hw_mon in controllers.iter_mut() {
             println!("Card {:3}", hw_mon.card.to_string().replace("card", ""));
             println!("  MIN |  MAX |  PWM   |   %");
+            let min = hw_mon.pwm_min();
+            let max = hw_mon.pwm_max();
             println!(
                 " {:>4} | {:>4} | {:>6} | {:>3}",
-                hw_mon.pwm_min(),
-                hw_mon.pwm_max(),
+                min,
+                max,
                 hw_mon
                     .pwm()
                     .map_or_else(|_e| String::from("FAILED"), |f| f.to_string()),
-                (hw_mon.pwm().unwrap_or_default() as f32 / 2.55).round(),
+                (crate::linear_map(hw_mon.pwm().unwrap_or_default() as f64, min as f64, max as f64, 0f64, 100f64)).round(),
             );
 
             println!();
@@ -83,13 +85,15 @@ pub fn short(config: Config) -> std::io::Result<()> {
                 "Card {:3} | Temp     |  MIN |  MAX |  PWM |   %",
                 hw_mon.card.to_string().replace("card", "")
             );
+            let min = hw_mon.pwm_min();
+            let max = hw_mon.pwm_max();
             println!(
                 "         | {:>5.2}    | {:>4} | {:>4} | {:>4} | {:>3}",
                 hw_mon.max_gpu_temp().unwrap_or_default(),
-                hw_mon.pwm_min(),
-                hw_mon.pwm_max(),
+                min,
+                max,
                 hw_mon.pwm().unwrap_or_default(),
-                (hw_mon.pwm().unwrap_or_default() as f32 / 2.55).round(),
+                crate::linear_map(hw_mon.pwm().unwrap_or_default() as f64, min as f64, max as f64, 0f64, 100f64).round(),
             );
         }
         std::thread::sleep(std::time::Duration::from_secs(4));
