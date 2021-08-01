@@ -145,6 +145,9 @@ fn controllers(config: &Config, filter: bool) -> std::io::Result<Vec<HwMon>> {
 
 fn service(config: Config) -> std::io::Result<()> {
     let mut controllers = controllers(&config, true)?;
+    if controllers.len() < 1 {
+        return Err(not_found());
+    }
     let mut cache = std::collections::HashMap::new();
     loop {
         for hw_mon in controllers.iter_mut() {
