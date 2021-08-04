@@ -80,14 +80,16 @@ pub struct Opts {
 }
 
 fn main() -> std::io::Result<()> {
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "DEBUG");
+    }
+    pretty_env_logger::init();
     if std::fs::read(CONFIG_DIR).map_err(|e| e.kind() == ErrorKind::NotFound) == Err(true) {
         std::fs::create_dir_all(CONFIG_DIR)?;
     }
 
     let config = load_config()?;
-
-    std::env::set_var("RUST_LOG", config.log_level().as_str());
-    pretty_env_logger::init();
+    log::set_max_level(config.log_level().as_str().parse().unwrap());
 
     let opts: Opts = Opts::parse_args_default_or_exit();
 
