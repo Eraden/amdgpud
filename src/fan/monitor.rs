@@ -1,6 +1,8 @@
-use crate::config::Config;
-use crate::{controllers, AmdFanError};
 use std::str::FromStr;
+
+use crate::config::Config;
+use crate::utils::controllers;
+use crate::AmdFanError;
 
 #[derive(Debug)]
 pub enum MonitorFormat {
@@ -34,6 +36,7 @@ pub struct Monitor {
     format: MonitorFormat,
 }
 
+/// Start print cards temperature and fan speed
 pub fn run(monitor: Monitor, config: Config) -> std::io::Result<()> {
     match monitor.format {
         MonitorFormat::Short => short(config),
@@ -57,7 +60,14 @@ pub fn verbose(config: Config) -> std::io::Result<()> {
                 hw_mon
                     .pwm()
                     .map_or_else(|_e| String::from("FAILED"), |f| f.to_string()),
-                (crate::linear_map(hw_mon.pwm().unwrap_or_default() as f64, min as f64, max as f64, 0f64, 100f64)).round(),
+                (crate::utils::linear_map(
+                    hw_mon.pwm().unwrap_or_default() as f64,
+                    min as f64,
+                    max as f64,
+                    0f64,
+                    100f64
+                ))
+                .round(),
             );
 
             println!();
@@ -93,7 +103,14 @@ pub fn short(config: Config) -> std::io::Result<()> {
                 min,
                 max,
                 hw_mon.pwm().unwrap_or_default(),
-                crate::linear_map(hw_mon.pwm().unwrap_or_default() as f64, min as f64, max as f64, 0f64, 100f64).round(),
+                crate::utils::linear_map(
+                    hw_mon.pwm().unwrap_or_default() as f64,
+                    min as f64,
+                    max as f64,
+                    0f64,
+                    100f64
+                )
+                .round(),
             );
         }
         std::thread::sleep(std::time::Duration::from_secs(4));

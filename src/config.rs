@@ -26,7 +26,7 @@ impl FromStr for Card {
         value[4..]
             .parse::<u32>()
             .map_err(|e| AmdFanError::InvalidSuffix(format!("{:?}", e)))
-            .map(|n| Card(n))
+            .map(Card)
     }
 }
 
@@ -71,7 +71,7 @@ impl<'de> Deserialize<'de> for Card {
                 }
             }
         }
-        deserializer.deserialize_str(CardVisitor).map(|v| Card(v))
+        deserializer.deserialize_str(CardVisitor).map(Card)
     }
 }
 
@@ -115,7 +115,7 @@ pub enum LogLevel {
 }
 
 impl LogLevel {
-    pub fn to_str(&self) -> &str {
+    pub fn as_str(&self) -> &str {
         match self {
             LogLevel::Off => "OFF",
             LogLevel::Error => "ERROR",
@@ -149,7 +149,7 @@ impl Config {
             return self.max_speed();
         }
 
-        crate::linear_map(
+        crate::utils::linear_map(
             temp,
             self.speed_matrix[idx].temp,
             self.speed_matrix[idx + 1].temp,

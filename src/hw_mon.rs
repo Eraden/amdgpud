@@ -1,6 +1,7 @@
 use crate::config::Card;
 use crate::io_err::{invalid_input, not_found};
-use crate::{linear_map, AmdFanError, HwMon, HW_MON_DIR, ROOT_DIR};
+use crate::utils::linear_map;
+use crate::{AmdFanError, HwMon, HW_MON_DIR, ROOT_DIR};
 
 /// pulse width modulation fan control minimum level (0)
 const PULSE_WIDTH_MODULATION_MIN: &str = "pwm1_min";
@@ -21,11 +22,11 @@ const PULSE_WIDTH_MODULATION_MANUAL: &str = "1";
 impl HwMon {
     pub fn new(card: &Card, name: &str) -> Self {
         Self {
-            card: card.clone(),
+            card: *card,
             name: String::from(name),
             pwm_min: None,
             pwm_max: None,
-            temp_inputs: load_temp_inputs(&card, name),
+            temp_inputs: load_temp_inputs(card, name),
         }
     }
 
@@ -34,7 +35,7 @@ impl HwMon {
         for name in self.temp_inputs.iter() {
             results.push(self.read_gpu_temp(name).unwrap_or(0));
         }
-        results.sort();
+        results.sort_unstable();
         results
             .last()
             .copied()
@@ -186,7 +187,7 @@ fn hw_mon_dirs_path(card: &Card) -> std::path::PathBuf {
 
 #[inline]
 fn hw_mon_dir_path(card: &Card, name: &str) -> std::path::PathBuf {
-    hw_mon_dirs_path(&card).join(name)
+    hw_mon_dirs_path(card).join(name)
 }
 
 pub(crate) fn open_hw_mon(card: Card) -> std::io::Result<HwMon> {
