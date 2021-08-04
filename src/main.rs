@@ -209,6 +209,10 @@ fn change_mode(switcher: Switcher, mode: FanMode, config: Config) -> std::io::Re
 }
 
 fn main() -> std::io::Result<()> {
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "DEBUG");
+    }
+    pretty_env_logger::init();
     if std::fs::read(CONFIG_DIR).map_err(|e| e.kind() == ErrorKind::NotFound) == Err(true) {
         std::fs::create_dir_all(CONFIG_DIR)?;
     }
@@ -216,7 +220,6 @@ fn main() -> std::io::Result<()> {
     let config = load_config()?;
 
     std::env::set_var("RUST_LOG", config.log_level().to_str());
-    pretty_env_logger::init();
 
     let opts: Opts = Opts::parse_args_default_or_exit();
 
