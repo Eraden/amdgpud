@@ -89,7 +89,7 @@ fn main() -> std::io::Result<()> {
     }
 
     let config = load_config()?;
-    log::set_max_level(config.log_level().to_str().parse().unwrap());
+    log::set_max_level(config.log_level().as_str().parse().unwrap());
 
     let opts: Opts = Opts::parse_args_default_or_exit();
 
