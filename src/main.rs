@@ -62,21 +62,13 @@ pub enum FanMode {
 }
 
 #[derive(Options)]
-pub enum Command {
-    #[options(help = "GPU card fan control")]
-    Fan(fan::FanCommand),
-    #[options(help = "Overclock GPU card")]
-    Voltage(voltage::VoltageCommand),
-}
-
-#[derive(Options)]
 pub struct Opts {
     #[options(help = "Help message")]
     help: bool,
     #[options(help = "Print version")]
     version: bool,
     #[options(command)]
-    command: Option<Command>,
+    command: Option<fan::FanCommand>,
 }
 
 fn main() -> std::io::Result<()> {
@@ -100,15 +92,15 @@ fn main() -> std::io::Result<()> {
 
     match opts.command {
         None => fan::service::run(config),
-        Some(Command::Fan(fan::FanCommand::Monitor(monitor))) => fan::monitor::run(monitor, config),
-        Some(Command::Fan(fan::FanCommand::Service(_))) => fan::service::run(config),
-        Some(Command::Fan(fan::FanCommand::SetAutomatic(switcher))) => {
+        Some(fan::FanCommand::Monitor(monitor)) => fan::monitor::run(monitor, config),
+        Some(fan::FanCommand::Service(_)) => fan::service::run(config),
+        Some(fan::FanCommand::SetAutomatic(switcher)) => {
             fan::change_mode::run(switcher, FanMode::Automatic, config)
         }
-        Some(Command::Fan(fan::FanCommand::SetManual(switcher))) => {
+        Some(fan::FanCommand::SetManual(switcher)) => {
             fan::change_mode::run(switcher, FanMode::Manual, config)
         }
-        Some(Command::Fan(fan::FanCommand::Available(_))) => {
+        Some(fan::FanCommand::Available(_)) => {
             println!("Available cards");
             utils::controllers(&config, false)?
                 .into_iter()
@@ -120,9 +112,6 @@ fn main() -> std::io::Result<()> {
                     );
                 });
             Ok(())
-        }
-        Some(Command::Voltage(voltage::VoltageCommand::Placeholder(_))) => {
-            unimplemented!()
         }
     }
 }
