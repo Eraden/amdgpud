@@ -6,23 +6,20 @@ use crate::FanMode;
 
 /// Change card fan mode to either automatic or manual
 pub fn run(switcher: Switcher, mode: FanMode, config: Config) -> std::io::Result<()> {
-    let mut controllers = crate::utils::controllers(&config, true)?;
+    let mut hw_mons = crate::utils::hw_mons(&config, true)?;
 
     let cards = match switcher.card {
-        Some(card_id) => match controllers
-            .iter()
-            .position(|hw_mon| *hw_mon.card == card_id)
-        {
-            Some(card) => vec![controllers.remove(card)],
+        Some(card_id) => match hw_mons.iter().position(|hw_mon| **hw_mon.card() == card_id) {
+            Some(card) => vec![hw_mons.remove(card)],
             None => {
                 eprintln!("Card does not exists. Available cards: ");
-                for hw_mon in controllers {
-                    eprintln!(" * {}", *hw_mon.card);
+                for hw_mon in hw_mons {
+                    eprintln!(" * {}", *hw_mon.card());
                 }
                 return Err(not_found());
             }
         },
-        None => controllers,
+        None => hw_mons,
     };
 
     for hw_mon in cards {

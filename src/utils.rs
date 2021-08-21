@@ -1,5 +1,6 @@
 use crate::config::{Card, Config};
-use crate::{hw_mon, HwMon, ROOT_DIR};
+use crate::hw_mon::HwMon;
+use crate::{hw_mon, ROOT_DIR};
 
 /// linear mapping from the xrange to the yrange
 pub fn linear_map(x: f64, x1: f64, x2: f64, y1: f64, y2: f64) -> f64 {
@@ -19,11 +20,10 @@ pub fn read_cards() -> std::io::Result<Vec<Card>> {
 
 /// Wrap cards in HW Mon manipulator and
 /// filter cards so only amd and listed in config cards are accessible
-pub fn controllers(config: &Config, filter: bool) -> std::io::Result<Vec<HwMon>> {
+pub fn hw_mons(config: &Config, filter: bool) -> std::io::Result<Vec<HwMon>> {
     Ok(read_cards()?
         .into_iter()
-        .filter(|card| !filter || config.cards().iter().any(|name| **name == **card))
-        .filter_map(|card| hw_mon::open_hw_mon(card).ok())
+        .filter_map(|card| hw_mon::open_hw_mon(card, config).ok())
         .filter(|hw_mon| !filter || { hw_mon.is_amd() })
         .filter(|hw_mon| !filter || hw_mon.name_is_amd())
         .collect())
