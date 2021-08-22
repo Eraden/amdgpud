@@ -17,7 +17,6 @@ const PULSE_WIDTH_MODULATION_MODE: &str = "pwm1_enable";
 
 // static PULSE_WIDTH_MODULATION_DISABLED: &str = "0";
 const PULSE_WIDTH_MODULATION_AUTO: &str = "2";
-const PULSE_WIDTH_MODULATION_MANUAL: &str = "1";
 
 #[derive(Debug)]
 pub struct HwMon {
@@ -115,12 +114,6 @@ impl HwMon {
             log::warn!("Read from gpu monitor failed. Invalid pwm value");
             invalid_input()
         })
-    }
-
-    pub fn is_fan_manual(&self) -> bool {
-        self.read(PULSE_WIDTH_MODULATION_MODE)
-            .map(|s| s.as_str() == PULSE_WIDTH_MODULATION_MANUAL)
-            .unwrap_or_default()
     }
 
     pub fn is_fan_automatic(&self) -> bool {
