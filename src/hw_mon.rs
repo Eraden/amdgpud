@@ -1,7 +1,7 @@
-use crate::config::Card;
+use crate::config::{Card, Config};
 use crate::io_err::{invalid_input, not_found};
 use crate::utils::linear_map;
-use crate::{AmdFanError, HwMon, HW_MON_DIR, ROOT_DIR};
+use crate::{AmdFanError, HW_MON_DIR, ROOT_DIR};
 
 /// pulse width modulation fan control minimum level (0)
 const PULSE_WIDTH_MODULATION_MIN: &str = "pwm1_min";
@@ -17,12 +17,28 @@ const PULSE_WIDTH_MODULATION_MODE: &str = "pwm1_enable";
 
 // static PULSE_WIDTH_MODULATION_DISABLED: &str = "0";
 const PULSE_WIDTH_MODULATION_AUTO: &str = "2";
-const PULSE_WIDTH_MODULATION_MANUAL: &str = "1";
+
+#[derive(Debug)]
+pub struct HwMon {
+    /// HW MOD cord (ex. card0)
+    card: Card,
+    /// MW MOD name (ex. hwmod0)
+    name: String,
+    /// Minimal modulation (between 0-255)
+    pwm_min: Option<u32>,
+    /// Maximal modulation (between 0-255)
+    pwm_max: Option<u32>,
+    /// List of available temperature inputs for current HW MOD
+    temp_inputs: Vec<String>,
+    /// Preferred temperature input
+    temp_input: Option<String>,
+}
 
 impl HwMon {
-    pub fn new(card: &Card, name: &str) -> Self {
+    pub fn new(card: &Card, name: &str, config: &Config) -> Self {
         Self {
             card: *card,
+            temp_input: config.temp_input().map(String::from),
             name: String::from(name),
             pwm_min: None,
             pwm_max: None,
@@ -31,6 +47,12 @@ impl HwMon {
     }
 
     pub fn max_gpu_temp(&self) -> std::io::Result<f64> {
+        if let Some(input) = self.temp_input.as_deref() {
+            return self
+                .read_gpu_temp(input)
+                .map(|temp| temp as f64 / 1000f64)
+                .map_err(|_| invalid_input());
+        }
         let mut results = Vec::with_capacity(self.temp_inputs.len());
         for name in self.temp_inputs.iter() {
             results.push(self.read_gpu_temp(name).unwrap_or(0));
@@ -64,6 +86,11 @@ impl HwMon {
     }
 
     #[inline]
+    pub(crate) fn card(&self) -> &Card {
+        &self.card
+    }
+
+    #[inline]
     pub(crate) fn name(&self) -> std::io::Result<String> {
         self.read("name")
     }
@@ -87,12 +114,6 @@ impl HwMon {
             log::warn!("Read from gpu monitor failed. Invalid pwm value");
             invalid_input()
         })
-    }
-
-    pub fn is_fan_manual(&self) -> bool {
-        self.read(PULSE_WIDTH_MODULATION_MODE)
-            .map(|s| s.as_str() == PULSE_WIDTH_MODULATION_MANUAL)
-            .unwrap_or_default()
     }
 
     pub fn is_fan_automatic(&self) -> bool {
@@ -190,7 +211,7 @@ fn hw_mon_dir_path(card: &Card, name: &str) -> std::path::PathBuf {
     hw_mon_dirs_path(card).join(name)
 }
 
-pub(crate) fn open_hw_mon(card: Card) -> std::io::Result<HwMon> {
+pub(crate) fn open_hw_mon(card: Card, config: &Config) -> std::io::Result<HwMon> {
     let read_path = hw_mon_dirs_path(&card);
     let entries = std::fs::read_dir(read_path)?;
     let name = entries
@@ -206,5 +227,5 @@ pub(crate) fn open_hw_mon(card: Card) -> std::io::Result<HwMon> {
         .take(1)
         .last()
         .ok_or_else(not_found)?;
-    Ok(HwMon::new(&card, &name))
+    Ok(HwMon::new(&card, &name, config))
 }

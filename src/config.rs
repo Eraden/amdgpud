@@ -130,15 +130,11 @@ impl LogLevel {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     log_level: LogLevel,
-    cards: Vec<Card>,
     speed_matrix: Vec<MatrixPoint>,
+    temp_input: Option<String>,
 }
 
 impl Config {
-    pub fn cards(&self) -> &[Card] {
-        &self.cards
-    }
-
     pub fn speed_for_temp(&self, temp: f64) -> f64 {
         let idx = match self.speed_matrix.iter().rposition(|p| p.temp <= temp) {
             Some(idx) => idx,
@@ -162,6 +158,10 @@ impl Config {
         self.log_level
     }
 
+    pub fn temp_input(&self) -> Option<&str> {
+        self.temp_input.as_deref()
+    }
+
     fn min_speed(&self) -> f64 {
         self.speed_matrix.first().map(|p| p.speed).unwrap_or(0f64)
     }
@@ -175,7 +175,6 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             log_level: LogLevel::Error,
-            cards: vec![Card(0)],
             speed_matrix: vec![
                 MatrixPoint {
                     temp: 4f64,
@@ -210,6 +209,7 @@ impl Default for Config {
                     speed: 100f64,
                 },
             ],
+            temp_input: Some(String::from("temp1_input")),
         }
     }
 }

@@ -3,7 +3,7 @@ use std::io::ErrorKind;
 
 use gumdrop::Options;
 
-use crate::config::{load_config, Card};
+use crate::config::load_config;
 
 mod config;
 mod fan;
@@ -47,15 +47,6 @@ impl std::fmt::Display for AmdFanError {
     }
 }
 
-#[derive(Debug)]
-pub struct HwMon {
-    card: Card,
-    name: String,
-    pwm_min: Option<u32>,
-    pwm_max: Option<u32>,
-    temp_inputs: Vec<String>,
-}
-
 pub enum FanMode {
     Manual,
     Automatic,
@@ -86,7 +77,7 @@ fn main() -> std::io::Result<()> {
     let opts: Opts = Opts::parse_args_default_or_exit();
 
     if opts.version {
-        println!("{}", env!("CARGO_PKG_VERSION"));
+        println!("amdfand {}", env!("CARGO_PKG_VERSION"));
         std::process::exit(0);
     }
 
@@ -102,12 +93,12 @@ fn main() -> std::io::Result<()> {
         }
         Some(fan::FanCommand::Available(_)) => {
             println!("Available cards");
-            utils::controllers(&config, false)?
+            utils::hw_mons(&config, false)?
                 .into_iter()
                 .for_each(|hw_mon| {
                     println!(
                         " * {:6>} - {}",
-                        hw_mon.card,
+                        hw_mon.card(),
                         hw_mon.name().unwrap_or_default()
                     );
                 });

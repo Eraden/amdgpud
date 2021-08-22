@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use crate::config::Config;
-use crate::utils::controllers;
+use crate::utils::hw_mons;
 use crate::AmdFanError;
 
 #[derive(Debug)]
@@ -45,11 +45,11 @@ pub fn run(monitor: Monitor, config: Config) -> std::io::Result<()> {
 }
 
 pub fn verbose(config: Config) -> std::io::Result<()> {
-    let mut controllers = controllers(&config, true)?;
+    let mut controllers = hw_mons(&config, true)?;
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
         for hw_mon in controllers.iter_mut() {
-            println!("Card {:3}", hw_mon.card.to_string().replace("card", ""));
+            println!("Card {:3}", hw_mon.card().to_string().replace("card", ""));
             println!("  MIN |  MAX |  PWM   |   %");
             let min = hw_mon.pwm_min();
             let max = hw_mon.pwm_max();
@@ -87,13 +87,13 @@ pub fn verbose(config: Config) -> std::io::Result<()> {
 }
 
 pub fn short(config: Config) -> std::io::Result<()> {
-    let mut controllers = controllers(&config, true)?;
+    let mut controllers = hw_mons(&config, true)?;
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
         for hw_mon in controllers.iter_mut() {
             println!(
                 "Card {:3} | Temp     |  MIN |  MAX |  PWM |   %",
-                hw_mon.card.to_string().replace("card", "")
+                hw_mon.card().to_string().replace("card", "")
             );
             let min = hw_mon.pwm_min();
             let max = hw_mon.pwm_max();
