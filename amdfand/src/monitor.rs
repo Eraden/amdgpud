@@ -1,8 +1,9 @@
+use crate::command::Fan;
+use crate::AmdFanError;
+use amdgpu::utils::{hw_mons, linear_map};
 use std::str::FromStr;
 
 use crate::config::Config;
-use crate::utils::hw_mons;
-use crate::AmdFanError;
 
 #[derive(Debug)]
 pub enum MonitorFormat {
@@ -37,18 +38,19 @@ pub struct Monitor {
 }
 
 /// Start print cards temperature and fan speed
-pub fn run(monitor: Monitor, config: Config) -> std::io::Result<()> {
+pub fn run(monitor: Monitor, config: Config) -> crate::Result<()> {
     match monitor.format {
         MonitorFormat::Short => short(config),
         MonitorFormat::Verbose => verbose(config),
     }
 }
 
-pub fn verbose(config: Config) -> std::io::Result<()> {
-    let mut controllers = hw_mons(&config, true)?;
+pub fn verbose(config: Config) -> crate::Result<()> {
+    let mut hw_mons = Fan::wrap_all(hw_mons(true)?, &config);
+
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-        for hw_mon in controllers.iter_mut() {
+        for hw_mon in hw_mons.iter_mut() {
             println!("Card {:3}", hw_mon.card().to_string().replace("card", ""));
             println!("  MIN |  MAX |  PWM   |   %");
             let min = hw_mon.pwm_min();
@@ -60,7 +62,7 @@ pub fn verbose(config: Config) -> std::io::Result<()> {
                 hw_mon
                     .pwm()
                     .map_or_else(|_e| String::from("FAILED"), |f| f.to_string()),
-                (crate::utils::linear_map(
+                (linear_map(
                     hw_mon.pwm().unwrap_or_default() as f64,
                     min as f64,
                     max as f64,
@@ -86,11 +88,11 @@ pub fn verbose(config: Config) -> std::io::Result<()> {
     }
 }
 
-pub fn short(config: Config) -> std::io::Result<()> {
-    let mut controllers = hw_mons(&config, true)?;
+pub fn short(config: Config) -> crate::Result<()> {
+    let mut hw_mons = Fan::wrap_all(hw_mons(true)?, &config);
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-        for hw_mon in controllers.iter_mut() {
+        for hw_mon in hw_mons.iter_mut() {
             println!(
                 "Card {:3} | Temp     |  MIN |  MAX |  PWM |   %",
                 hw_mon.card().to_string().replace("card", "")
@@ -103,7 +105,7 @@ pub fn short(config: Config) -> std::io::Result<()> {
                 min,
                 max,
                 hw_mon.pwm().unwrap_or_default(),
-                crate::utils::linear_map(
+                linear_map(
                     hw_mon.pwm().unwrap_or_default() as f64,
                     min as f64,
                     max as f64,

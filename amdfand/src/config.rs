@@ -1,140 +1,32 @@
-use crate::{AmdFanError, CONFIG_PATH};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::fmt::Formatter;
+use amdgpu::utils::linear_map;
+use amdgpu::{LogLevel, TempInput};
 use std::io::ErrorKind;
-use std::str::FromStr;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct Card(pub u32);
-
-impl std::fmt::Display for Card {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&format!("card{}", self.0))
-    }
-}
-
-impl FromStr for Card {
-    type Err = AmdFanError;
-
-    fn from_str(value: &str) -> Result<Self, Self::Err> {
-        if !value.starts_with("card") {
-            return Err(AmdFanError::InvalidPrefix);
-        }
-        if value.len() < 5 {
-            return Err(AmdFanError::InputTooShort);
-        }
-        value[4..]
-            .parse::<u32>()
-            .map_err(|e| AmdFanError::InvalidSuffix(format!("{:?}", e)))
-            .map(Card)
-    }
-}
-
-impl<'de> Deserialize<'de> for Card {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        use serde::de::{self, Visitor};
-
-        struct CardVisitor;
-
-        impl<'de> Visitor<'de> for CardVisitor {
-            type Value = u32;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("must have format cardX")
-            }
-
-            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                match value.parse::<Card>() {
-                    Ok(card) => Ok(*card),
-                    Err(AmdFanError::InvalidPrefix) => {
-                        Err(E::custom(format!("expect cardX but got {}", value)))
-                    }
-                    Err(AmdFanError::InvalidSuffix(s)) => Err(E::custom(s)),
-                    Err(AmdFanError::InputTooShort) => Err(E::custom(format!(
-                        "{:?} must have at least 5 characters",
-                        value
-                    ))),
-                    Err(AmdFanError::NotAmdCard) => {
-                        Err(E::custom(format!("{} is not an AMD GPU", value)))
-                    }
-                    Err(AmdFanError::FailedReadVendor) => Err(E::custom(format!(
-                        "Failed to read vendor file for {}",
-                        value
-                    ))),
-                    _ => unreachable!(),
-                }
-            }
-        }
-        deserializer.deserialize_str(CardVisitor).map(Card)
-    }
-}
-
-impl Serialize for Card {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
-
-impl std::ops::Deref for Card {
-    type Target = u32;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct MatrixPoint {
     pub temp: f64,
     pub speed: f64,
 }
 
-#[derive(Serialize, Deserialize, Debug, Copy, Clone)]
-pub enum LogLevel {
-    /// A level lower than all log levels.
-    Off,
-    /// Corresponds to the `Error` log level.
-    Error,
-    /// Corresponds to the `Warn` log level.
-    Warn,
-    /// Corresponds to the `Info` log level.
-    Info,
-    /// Corresponds to the `Debug` log level.
-    Debug,
-    /// Corresponds to the `Trace` log level.
-    Trace,
-}
-
-impl LogLevel {
-    pub fn as_str(&self) -> &str {
-        match self {
-            LogLevel::Off => "OFF",
-            LogLevel::Error => "ERROR",
-            LogLevel::Warn => "WARN",
-            LogLevel::Info => "INFO",
-            LogLevel::Debug => "DEBUG",
-            LogLevel::Trace => "TRACE",
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct Config {
+    cards: Option<Vec<String>>,
     log_level: LogLevel,
     speed_matrix: Vec<MatrixPoint>,
-    temp_input: Option<String>,
+    /// One of temperature inputs /sys/class/drm/card{X}/device/hwmon/hwmon{Y}/temp{Z}_input
+    /// If nothing is provided higher reading will be taken (this is not good!)
+    temp_input: Option<TempInput>,
 }
 
 impl Config {
+    #[deprecated(
+        since = "1.0.6",
+        note = "Multi-card used is halted until we will have PC with multiple AMD GPU"
+    )]
+    pub fn cards(&self) -> Option<&Vec<String>> {
+        self.cards.as_ref()
+    }
+
     pub fn speed_for_temp(&self, temp: f64) -> f64 {
         let idx = match self.speed_matrix.iter().rposition(|p| p.temp <= temp) {
             Some(idx) => idx,
@@ -145,7 +37,7 @@ impl Config {
             return self.max_speed();
         }
 
-        crate::utils::linear_map(
+        linear_map(
             temp,
             self.speed_matrix[idx].temp,
             self.speed_matrix[idx + 1].temp,
@@ -158,8 +50,8 @@ impl Config {
         self.log_level
     }
 
-    pub fn temp_input(&self) -> Option<&str> {
-        self.temp_input.as_deref()
+    pub fn temp_input(&self) -> Option<&TempInput> {
+        self.temp_input.as_ref()
     }
 
     fn min_speed(&self) -> f64 {
@@ -174,6 +66,8 @@ impl Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            #[allow(deprecated)]
+            cards: None,
             log_level: LogLevel::Error,
             speed_matrix: vec![
                 MatrixPoint {
@@ -209,17 +103,41 @@ impl Default for Config {
                     speed: 100f64,
                 },
             ],
-            temp_input: Some(String::from("temp1_input")),
+            temp_input: Some(TempInput(1)),
         }
     }
 }
 
-pub fn load_config() -> std::io::Result<Config> {
-    let config = match std::fs::read_to_string(CONFIG_PATH) {
+#[derive(Debug, thiserror::Error, PartialEq)]
+pub enum ConfigError {
+    #[error("Fan speed {value:?} for config entry {index:} is too low (minimal value is 0.0)")]
+    FanSpeedTooLow { value: f64, index: usize },
+    #[error("Fan speed {value:?} for config entry {index:} is too high (maximal value is 100.0)")]
+    FanSpeedTooHigh { value: f64, index: usize },
+    #[error(
+        "Fan speed {current:?} for config entry {index} is lower than previous value {last:?}. Entries must be sorted"
+    )]
+    UnsortedFanSpeed {
+        current: f64,
+        index: usize,
+        last: f64,
+    },
+    #[error(
+        "Fan temperature {current:?} for config entry {index} is lower than previous value {last:?}. Entries must be sorted"
+    )]
+    UnsortedFanTemp {
+        current: f64,
+        index: usize,
+        last: f64,
+    },
+}
+
+pub fn load_config(config_path: &str) -> crate::Result<Config> {
+    let config = match std::fs::read_to_string(config_path) {
         Ok(s) => toml::from_str(&s).unwrap(),
         Err(e) if e.kind() == ErrorKind::NotFound => {
             let config = Config::default();
-            std::fs::write(CONFIG_PATH, toml::to_string(&config).unwrap())?;
+            std::fs::write(config_path, toml::to_string(&config).unwrap())?;
             config
         }
         Err(e) => {
@@ -230,17 +148,25 @@ pub fn load_config() -> std::io::Result<Config> {
 
     let mut last_point: Option<&MatrixPoint> = None;
 
-    for matrix_point in config.speed_matrix.iter() {
+    for (index, matrix_point) in config.speed_matrix.iter().enumerate() {
         if matrix_point.speed < 0f64 {
             log::error!("Fan speed can't be below 0.0 found {}", matrix_point.speed);
-            return Err(std::io::Error::from(ErrorKind::InvalidData));
+            return Err(ConfigError::FanSpeedTooLow {
+                value: matrix_point.speed,
+                index,
+            }
+            .into());
         }
         if matrix_point.speed > 100f64 {
             log::error!(
                 "Fan speed can't be above 100.0 found {}",
                 matrix_point.speed
             );
-            return Err(std::io::Error::from(ErrorKind::InvalidData));
+            return Err(ConfigError::FanSpeedTooHigh {
+                value: matrix_point.speed,
+                index,
+            }
+            .into());
         }
         if let Some(last_point) = last_point {
             if matrix_point.speed < last_point.speed {
@@ -249,7 +175,13 @@ pub fn load_config() -> std::io::Result<Config> {
                     last_point.speed,
                     matrix_point.speed
                 );
-                return Err(std::io::Error::from(ErrorKind::InvalidData));
+
+                return Err(ConfigError::UnsortedFanSpeed {
+                    current: matrix_point.speed,
+                    last: last_point.speed,
+                    index,
+                }
+                .into());
             }
             if matrix_point.temp < last_point.temp {
                 log::error!(
@@ -257,7 +189,13 @@ pub fn load_config() -> std::io::Result<Config> {
                     last_point.temp,
                     matrix_point.temp
                 );
-                return Err(std::io::Error::from(ErrorKind::InvalidData));
+
+                return Err(ConfigError::UnsortedFanTemp {
+                    current: matrix_point.temp,
+                    last: last_point.temp,
+                    index,
+                }
+                .into());
             }
         }
 
@@ -269,7 +207,8 @@ pub fn load_config() -> std::io::Result<Config> {
 
 #[cfg(test)]
 mod parse_config {
-    use super::*;
+    use crate::config::TempInput;
+    use amdgpu::{AmdGpuError, Card};
     use serde::Deserialize;
 
     #[derive(Deserialize, PartialEq, Debug)]
@@ -290,6 +229,35 @@ mod parse_config {
     #[test]
     fn toml_card0() {
         assert_eq!(toml::from_str("card = 'card0'"), Ok(Foo { card: Card(0) }))
+    }
+
+    #[test]
+    fn parse_invalid_temp_input() {
+        assert_eq!(
+            "".parse::<TempInput>(),
+            Err(AmdGpuError::InvalidTempInput("".to_string()))
+        );
+        assert_eq!(
+            "12".parse::<TempInput>(),
+            Err(AmdGpuError::InvalidTempInput("12".to_string()))
+        );
+        assert_eq!(
+            "temp12".parse::<TempInput>(),
+            Err(AmdGpuError::InvalidTempInput("temp12".to_string()))
+        );
+        assert_eq!(
+            "12_input".parse::<TempInput>(),
+            Err(AmdGpuError::InvalidTempInput("12_input".to_string()))
+        );
+        assert_eq!(
+            "temp_12_input".parse::<TempInput>(),
+            Err(AmdGpuError::InvalidTempInput("temp_12_input".to_string()))
+        );
+    }
+
+    #[test]
+    fn parse_valid_temp_input() {
+        assert_eq!("temp12_input".parse::<TempInput>(), Ok(TempInput(12)));
     }
 }
 
