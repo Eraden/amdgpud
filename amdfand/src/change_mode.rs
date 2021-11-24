@@ -1,12 +1,13 @@
+use crate::command::Fan;
+use amdgpu::utils::hw_mons;
 use gumdrop::Options;
 
 use crate::config::Config;
-use crate::io_err::not_found;
-use crate::FanMode;
+use crate::{AmdFanError, FanMode};
 
 /// Change card fan mode to either automatic or manual
-pub fn run(switcher: Switcher, mode: FanMode, config: Config) -> std::io::Result<()> {
-    let mut hw_mons = crate::utils::hw_mons(&config, true)?;
+pub fn run(switcher: Switcher, mode: FanMode, config: Config) -> crate::Result<()> {
+    let mut hw_mons = Fan::wrap_all(hw_mons(true)?, &config);
 
     let cards = match switcher.card {
         Some(card_id) => match hw_mons.iter().position(|hw_mon| **hw_mon.card() == card_id) {
@@ -16,7 +17,7 @@ pub fn run(switcher: Switcher, mode: FanMode, config: Config) -> std::io::Result
                 for hw_mon in hw_mons {
                     eprintln!(" * {}", *hw_mon.card());
                 }
-                return Err(not_found());
+                return Err(AmdFanError::NoAmdCardFound);
             }
         },
         None => hw_mons,
@@ -25,12 +26,12 @@ pub fn run(switcher: Switcher, mode: FanMode, config: Config) -> std::io::Result
     for hw_mon in cards {
         match mode {
             FanMode::Automatic => {
-                if let Err(e) = hw_mon.set_automatic() {
+                if let Err(e) = hw_mon.write_automatic() {
                     log::error!("{:?}", e);
                 }
             }
             FanMode::Manual => {
-                if let Err(e) = hw_mon.set_manual() {
+                if let Err(e) = hw_mon.write_manual() {
                     log::error!("{:?}", e);
                 }
             }

@@ -1,18 +1,31 @@
+use crate::command::Fan;
+use crate::AmdFanError;
+use amdgpu::utils::hw_mons;
 use gumdrop::Options;
 
 use crate::config::Config;
-use crate::io_err::not_found;
 
 /// Start service which will change fan speed according to config and GPU temperature
-pub fn run(config: Config) -> std::io::Result<()> {
-    let mut controllers = crate::utils::hw_mons(&config, true)?;
-    if controllers.is_empty() {
-        return Err(not_found());
+pub fn run(config: Config) -> crate::Result<()> {
+    let mut hw_mons = Fan::wrap_all(hw_mons(true)?, &config);
+
+    if hw_mons.is_empty() {
+        return Err(AmdFanError::NoHwMonFound);
     }
     let mut cache = std::collections::HashMap::new();
     loop {
-        for hw_mon in controllers.iter_mut() {
-            let gpu_temp = hw_mon.max_gpu_temp().unwrap_or_default();
+        for hw_mon in hw_mons.iter_mut() {
+            let gpu_temp = config
+                .temp_input()
+                .and_then(|input| {
+                    hw_mon
+                        .read_gpu_temp(&input.as_string())
+                        .map(|temp| temp as f64 / 1000f64)
+                        .ok()
+                })
+                .or_else(|| hw_mon.max_gpu_temp().ok())
+                .unwrap_or_default();
+
             log::debug!("Current {} temperature: {}", hw_mon.card(), gpu_temp);
             let last = *cache.entry(**hw_mon.card()).or_insert(1_000f64);
 

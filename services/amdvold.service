@@ -1,9 +1,9 @@
 [Unit]
-Description=AMD GPU fan daemon
+Description=AMD GPU voltage daemon
 After=sysinit.target local-fs.target
 [Service]
 Restart=on-failure
 RestartSec=4
-ExecStart=/usr/bin/amdfand service
+ExecStart=/usr/bin/amdvold service
 [Install]
 WantedBy=multi-user.target

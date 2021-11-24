@@ -31,7 +31,7 @@ sudo argonfand service # check amdgpu temperature and adjust speed from config f
 ```toml
 # /etc/amdfand/config.toml
 log_level = "Error"
-cards = ["card0"]
+temp_input = "temp1_input"
 
 [[speed_matrix]]
 temp = 4.0
