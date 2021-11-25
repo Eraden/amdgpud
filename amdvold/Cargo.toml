@@ -9,7 +9,7 @@ categories = ["hardware-support"]
 repository = "https://github.com/Eraden/amdgpud"
 
 [dependencies]
-amdgpu = { path = "../amdgpu" }
+amdgpu = { path = "../amdgpu", version = "1.0.6" }
 
 serde = { version = "1.0.126", features = ["derive"] }
 toml = { version = "0.5.8" }
@@ -18,3 +18,6 @@ gumdrop = { version = "0.8.0" }
 
 log = { version = "0.4.14" }
 pretty_env_logger = { version = "0.4.0" }
+
+[dev-dependencies]
+amdgpu = { path = "../amdgpu", version = "1.0" }
