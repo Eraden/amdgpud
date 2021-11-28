@@ -66,9 +66,17 @@ temp = 80.0
 speed = 100.0
 ```
 
+## Roadmap
+
+* [ ] Write metrics
+* [ ] Add support for multiple cards
+  * Multiple services must recognize card even if there's multiple same version cards is installed
+  * Support should be by using `--config` option
+* [ ] CLI for fan config edit
+* [ ] CLI for voltage edit
+* [ ] GUI application using native Rust framework (ex. egui, druid)
+
 ## :bookmark: License
 
 This work is dual-licensed under Apache 2.0 and MIT.
 You can choose between one of them if you use this work.
-
-`SPDX-License-Identifier: Apache-2.0 OR MIT`

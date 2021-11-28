@@ -1,6 +1,6 @@
 [package]
 name = "amdvold"
-version = "1.0.6"
+version = "1.0.7"
 edition = "2018"
 description = "AMDGPU fan control service"
 license = "MIT OR Apache-2.0"
@@ -9,7 +9,7 @@ categories = ["hardware-support"]
 repository = "https://github.com/Eraden/amdgpud"
 
 [dependencies]
-amdgpu = { path = "../amdgpu", version = "1.0.6" }
+amdgpu = { path = "../amdgpu", version = "1.0.7" }
 
 serde = { version = "1.0.126", features = ["derive"] }
 toml = { version = "0.5.8" }
