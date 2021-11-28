@@ -59,7 +59,7 @@ impl HwMon {
     }
 
     pub fn mon_dir(&self) -> std::path::PathBuf {
-        self.device_dir().join(&*self.name)
+        self.device_dir().join("hwmon").join(&*self.name)
     }
 
     #[inline]

@@ -86,6 +86,7 @@ fn setup() -> Result<(String, Config)> {
         .config
         .unwrap_or_else(|| DEFAULT_CONFIG_PATH.to_string());
     let config = load_config(&config_path)?;
+    log::info!("{:?}", config);
     log::set_max_level(config.log_level().as_str().parse().unwrap());
     Ok((config_path, config))
 }
