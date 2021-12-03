@@ -385,47 +385,47 @@ VDDC_CURVE_VOLT[2]:     750mV        1200mV
                     CurvePoint {
                         freq: Frequency {
                             value: 800,
-                            unit: "MHz".to_string()
+                            unit: "MHz".to_string(),
                         },
                         voltage: Voltage {
                             value: 706,
-                            unit: "mV".to_string()
-                        }
+                            unit: "mV".to_string(),
+                        },
                     },
                     CurvePoint {
                         freq: Frequency {
                             value: 1450,
-                            unit: "MHz".to_string()
+                            unit: "MHz".to_string(),
                         },
                         voltage: Voltage {
                             value: 772,
-                            unit: "mV".to_string()
-                        }
+                            unit: "mV".to_string(),
+                        },
                     },
                     CurvePoint {
                         freq: Frequency {
                             value: 2100,
-                            unit: "MHz".to_string()
+                            unit: "MHz".to_string(),
                         },
                         voltage: Voltage {
                             value: 1143,
-                            unit: "mV".to_string()
-                        }
-                    }
+                            unit: "mV".to_string(),
+                        },
+                    },
                 ],
                 engine_label_lowest: Some(Frequency {
                     value: 800,
-                    unit: "Mhz".to_string()
+                    unit: "Mhz".to_string(),
                 }),
                 engine_label_highest: Some(Frequency {
                     value: 2100,
-                    unit: "Mhz".to_string()
+                    unit: "Mhz".to_string(),
                 }),
                 memory_label_lowest: Some(Frequency {
                     value: 875,
-                    unit: "MHz".to_string()
+                    unit: "MHz".to_string(),
                 }),
-                memory_label_highest: None
+                memory_label_highest: None,
             })
         );
     }

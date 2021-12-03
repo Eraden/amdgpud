@@ -1,10 +1,11 @@
+use amdgpu::hw_mon::HwMon;
+
+use crate::{Config, VoltageError};
 use crate::apply_changes::ApplyChanges;
 use crate::change_state::ChangeState;
 use crate::clock_state::{ClockState, Frequency, Voltage};
 use crate::print_states::PrintStates;
 use crate::setup_info::SetupInfo;
-use crate::{Config, VoltageError};
-use amdgpu::hw_mon::HwMon;
 
 #[derive(Debug)]
 pub enum HardwareModule {

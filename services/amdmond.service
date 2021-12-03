@@ -1,0 +1,9 @@
+[Unit]
+Description=AMD GPU monitoring tool
+After=sysinit.target local-fs.target
+[Service]
+Restart=on-failure
+RestartSec=4
+ExecStart=/usr/bin/amdmond log_file -s /var/log/amdmon.csv
+[Install]
+WantedBy=multi-user.target

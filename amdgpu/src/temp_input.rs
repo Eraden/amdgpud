@@ -37,8 +37,8 @@ impl std::str::FromStr for TempInput {
 
 impl<'de> serde::Deserialize<'de> for TempInput {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
+        where
+            D: serde::Deserializer<'de>,
     {
         use serde::de::{self, Visitor};
 
@@ -52,8 +52,8 @@ impl<'de> serde::Deserialize<'de> for TempInput {
             }
 
             fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
+                where
+                    E: de::Error,
             {
                 match value.parse::<TempInput>() {
                     Ok(temp) => Ok(temp.0),

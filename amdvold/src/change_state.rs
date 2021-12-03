@@ -1,7 +1,8 @@
+use amdgpu::utils::hw_mons;
+
 use crate::clock_state::{Frequency, Voltage};
 use crate::command::{HardwareModule, VoltageManipulator};
 use crate::{Config, VoltageError};
-use amdgpu::utils::hw_mons;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ChangeStateError {
@@ -17,6 +18,8 @@ pub enum ChangeStateError {
 
 #[derive(Debug, gumdrop::Options)]
 pub struct ChangeState {
+    #[options(help = "Help message")]
+    help: bool,
     #[options(help = "Profile number", free)]
     index: u16,
     #[options(help = "Either memory or engine", free)]
@@ -36,6 +39,7 @@ pub fn run(command: ChangeState, config: &Config) -> crate::Result<()> {
     }
     let mon = mons.remove(0);
     let ChangeState {
+        help: _,
         index,
         module,
         frequency,

@@ -1,6 +1,7 @@
-use amdgpu::utils::linear_map;
+use amdgpu::utils::{ensure_config, linear_map};
 use amdgpu::{LogLevel, TempInput};
-use std::io::ErrorKind;
+
+pub static DEFAULT_FAN_CONFIG_PATH: &str = "/etc/amdfand/config.toml";
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct MatrixPoint {
@@ -25,6 +26,13 @@ impl Config {
     )]
     pub fn cards(&self) -> Option<&Vec<String>> {
         self.cards.as_ref()
+    }
+
+    pub fn speed_matrix_point(&self, temp: f64) -> Option<&MatrixPoint> {
+        match self.speed_matrix.iter().rposition(|p| p.temp <= temp) {
+            Some(idx) => self.speed_matrix.get(idx),
+            _ => None,
+        }
     }
 
     pub fn speed_for_temp(&self, temp: f64) -> f64 {
@@ -108,14 +116,14 @@ impl Default for Config {
     }
 }
 
-#[derive(Debug, thiserror::Error, PartialEq)]
+#[derive(Debug, thiserror::Error)]
 pub enum ConfigError {
     #[error("Fan speed {value:?} for config entry {index:} is too low (minimal value is 0.0)")]
     FanSpeedTooLow { value: f64, index: usize },
     #[error("Fan speed {value:?} for config entry {index:} is too high (maximal value is 100.0)")]
     FanSpeedTooHigh { value: f64, index: usize },
     #[error(
-        "Fan speed {current:?} for config entry {index} is lower than previous value {last:?}. Entries must be sorted"
+    "Fan speed {current:?} for config entry {index} is lower than previous value {last:?}. Entries must be sorted"
     )]
     UnsortedFanSpeed {
         current: f64,
@@ -123,28 +131,19 @@ pub enum ConfigError {
         last: f64,
     },
     #[error(
-        "Fan temperature {current:?} for config entry {index} is lower than previous value {last:?}. Entries must be sorted"
+    "Fan temperature {current:?} for config entry {index} is lower than previous value {last:?}. Entries must be sorted"
     )]
     UnsortedFanTemp {
         current: f64,
         index: usize,
         last: f64,
     },
+    #[error("{0}")]
+    Io(#[from] std::io::Error),
 }
 
-pub fn load_config(config_path: &str) -> crate::Result<Config> {
-    let config = match std::fs::read_to_string(config_path) {
-        Ok(s) => toml::from_str(&s).unwrap(),
-        Err(e) if e.kind() == ErrorKind::NotFound => {
-            let config = Config::default();
-            std::fs::write(config_path, toml::to_string(&config).unwrap())?;
-            config
-        }
-        Err(e) => {
-            log::error!("{:?}", e);
-            panic!();
-        }
-    };
+pub fn load_config(config_path: &str) -> Result<Config, ConfigError> {
+    let config = ensure_config::<Config, ConfigError, _>(config_path)?;
 
     let mut last_point: Option<&MatrixPoint> = None;
 
@@ -207,9 +206,9 @@ pub fn load_config(config_path: &str) -> crate::Result<Config> {
 
 #[cfg(test)]
 mod parse_config {
-    use crate::config::TempInput;
-    use amdgpu::{AmdGpuError, Card};
     use serde::Deserialize;
+
+    use amdgpu::{AmdGpuError, Card, TempInput};
 
     #[derive(Deserialize, PartialEq, Debug)]
     pub struct Foo {

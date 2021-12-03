@@ -1,9 +1,10 @@
-use crate::command::Fan;
-use crate::AmdFanError;
-use amdgpu::utils::hw_mons;
 use gumdrop::Options;
 
-use crate::config::Config;
+use amdgpu::utils::hw_mons;
+use amdgpu_config::fan::Config;
+
+use crate::AmdFanError;
+use crate::command::Fan;
 
 /// Start service which will change fan speed according to config and GPU temperature
 pub fn run(config: Config) -> crate::Result<()> {

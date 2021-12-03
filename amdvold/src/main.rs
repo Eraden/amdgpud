@@ -1,15 +1,15 @@
-use crate::command::VoltageCommand;
-use crate::config::{load_config, Config};
-use crate::error::VoltageError;
-use amdgpu::CONFIG_DIR;
 use gumdrop::Options;
-use std::io::ErrorKind;
+
+use amdgpu::utils::ensure_config_dir;
+use amdgpu_config::voltage::{Config, load_config};
+
+use crate::command::VoltageCommand;
+use crate::error::VoltageError;
 
 mod apply_changes;
 mod change_state;
 mod clock_state;
 mod command;
-mod config;
 mod error;
 mod print_states;
 mod setup_info;
@@ -29,6 +29,7 @@ pub struct Opts {
     #[options(command)]
     command: Option<command::VoltageCommand>,
 }
+
 fn run(config: Config) -> Result<()> {
     let opts: Opts = Opts::parse_args_default_or_exit();
 
@@ -54,9 +55,7 @@ fn setup() -> Result<(String, Config)> {
         std::env::set_var("RUST_LOG", "DEBUG");
     }
     pretty_env_logger::init();
-    if std::fs::read(CONFIG_DIR).map_err(|e| e.kind() == ErrorKind::NotFound) == Err(true) {
-        std::fs::create_dir_all(CONFIG_DIR)?;
-    }
+    ensure_config_dir()?;
 
     let config_path = Opts::parse_args_default_or_exit()
         .config

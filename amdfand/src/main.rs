@@ -1,22 +1,18 @@
+extern crate log;
+
+use gumdrop::Options;
+
+use amdgpu::utils::{ensure_config_dir, hw_mons};
+use amdgpu_config::fan::{load_config, Config, DEFAULT_FAN_CONFIG_PATH};
+
 use crate::command::FanCommand;
 use crate::error::AmdFanError;
-use amdgpu::utils::hw_mons;
-use amdgpu::CONFIG_DIR;
-use config::{load_config, Config};
-use gumdrop::Options;
-use std::io::ErrorKind;
 
 mod change_mode;
 mod command;
-mod config;
 mod error;
-mod monitor;
 mod panic_handler;
 mod service;
-
-extern crate log;
-
-pub static DEFAULT_CONFIG_PATH: &str = "/etc/amdfand/config.toml";
 
 pub type Result<T> = std::result::Result<T, AmdFanError>;
 
@@ -51,7 +47,6 @@ fn run(config: Config) -> Result<()> {
 
     match opts.command {
         None => service::run(config),
-        Some(FanCommand::Monitor(monitor)) => monitor::run(monitor, config),
         Some(FanCommand::Service(_)) => service::run(config),
         Some(FanCommand::SetAutomatic(switcher)) => {
             change_mode::run(switcher, FanMode::Automatic, config)
@@ -78,13 +73,11 @@ fn setup() -> Result<(String, Config)> {
         std::env::set_var("RUST_LOG", "DEBUG");
     }
     pretty_env_logger::init();
-    if std::fs::read(CONFIG_DIR).map_err(|e| e.kind() == ErrorKind::NotFound) == Err(true) {
-        std::fs::create_dir_all(CONFIG_DIR)?;
-    }
+    ensure_config_dir()?;
 
     let config_path = Opts::parse_args_default_or_exit()
         .config
-        .unwrap_or_else(|| DEFAULT_CONFIG_PATH.to_string());
+        .unwrap_or_else(|| DEFAULT_FAN_CONFIG_PATH.to_string());
     let config = load_config(&config_path)?;
     log::info!("{:?}", config);
     log::set_max_level(config.log_level().as_str().parse().unwrap());

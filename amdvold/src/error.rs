@@ -1,7 +1,8 @@
+use amdgpu::AmdGpuError;
+use amdgpu_config::voltage::ConfigError;
+
 use crate::change_state::ChangeStateError;
 use crate::clock_state::ClockStateError;
-use crate::config::ConfigError;
-use amdgpu::AmdGpuError;
 
 #[derive(Debug, thiserror::Error)]
 pub enum VoltageError {

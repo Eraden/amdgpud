@@ -1,4 +1,4 @@
-use crate::config::Config;
+use amdgpu_config::voltage::Config;
 
 pub static ENABLE_VOLTAGE_INFO: &str = include_str!("../assets/enable_voltage_info.txt");
 

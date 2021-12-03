@@ -1,13 +1,12 @@
-use crate::command::FanError;
-use crate::config::ConfigError;
 use amdgpu::AmdGpuError;
+use amdgpu_config::fan::ConfigError;
+
+use crate::command::FanError;
 
 #[derive(Debug, thiserror::Error)]
 pub enum AmdFanError {
     #[error("Vendor is not AMD")]
     NotAmdCard,
-    #[error("Monitor format is not valid. Available values are: short, s, long l, verbose and v")]
-    InvalidMonitorFormat,
     #[error("No hwmod has been found in sysfs")]
     NoHwMonFound,
     #[error("No AMD Card has been found in sysfs")]

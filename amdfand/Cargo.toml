@@ -1,6 +1,6 @@
 [package]
 name = "amdfand"
-version = "1.0.7"
+version = "1.0.8"
 edition = "2018"
 description = "AMDGPU fan control service"
 license = "MIT OR Apache-2.0"
@@ -9,7 +9,8 @@ categories = ["hardware-support"]
 repository = "https://github.com/Eraden/amdgpud"
 
 [dependencies]
-amdgpu = { path = "../amdgpu", version = "1.0.7" }
+amdgpu = { path = "../amdgpu", version = "1.0.8" }
+amdgpu-config = { path = "../amdgpu-config", version = "1.0.8", features = ["fan"] }
 
 serde = { version = "1.0.126", features = ["derive"] }
 toml = { version = "0.5.8" }
@@ -21,3 +22,4 @@ pretty_env_logger = { version = "0.4.0" }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0" }
+amdgpu-config = { path = "../amdgpu-config", version = "1.0", features = ["fan"] }

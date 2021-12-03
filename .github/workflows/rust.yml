@@ -14,28 +14,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ ubuntu-18.04, ubuntu-20.04 ]
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Add target
-      run: rustup target install x86_64-unknown-linux-musl
-    - name: Run clippy
-      run: cargo clippy -- -D warnings
-    - name: Run fmt check
-      run: cargo fmt -- --check
-    - name: Run tests
-      run: cargo test --verbose
-    - name: Install binary compressor
-      run: sudo apt-get update && sudo apt-get install upx-ucl
-    - name: Build
-      run: cargo build --release --verbose --target=x86_64-unknown-linux-musl && strip ./target/x86_64-unknown-linux-musl/release/amdfand && upx --best --lzma target/x86_64-unknown-linux-musl/release/amdfand
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2.2.4
-      with:
-        # Artifact name
-        name: amdfand-${{ matrix.os }}
-        # A file, directory or wildcard pattern that describes what to upload
-        path: ./target/x86_64-unknown-linux-musl/release/amdfand
-        # The desired behavior if no files are found using the provided path.
+      - uses: actions/checkout@v2
+      - name: Add target
+        run: rustup target install x86_64-unknown-linux-musl
+      - name: Run clippy
+        run: cargo clippy -- -D warnings
+      - name: Run fmt check
+        run: cargo fmt -- --check
+      - name: Run tests
+        run: cargo test --verbose
+      - name: Install binary compressor
+        run: sudo apt-get update && sudo apt-get install upx-ucl
+      - name: Build
+        run: cargo build --release --verbose --target=x86_64-unknown-linux-musl && strip ./target/x86_64-unknown-linux-musl/release/amdfand && upx --best --lzma target/x86_64-unknown-linux-musl/release/amdfand
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          # Artifact name
+          name: amdfand-${{ matrix.os }}
+          # A file, directory or wildcard pattern that describes what to upload
+          path: ./target/x86_64-unknown-linux-musl/release/amdfand
+          # The desired behavior if no files are found using the provided path.
