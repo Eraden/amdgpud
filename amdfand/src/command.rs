@@ -90,7 +90,8 @@ impl Fan {
         v.into_iter().map(|hw| Self::wrap(hw, config)).collect()
     }
 
-    pub(crate) fn set_speed(&mut self, speed: f64) -> crate::Result<()> {
+    /// Change fan speed to given value if it's between minimal and maximal value
+    pub fn set_speed(&mut self, speed: f64) -> crate::Result<()> {
         let min = self.pwm_min() as f64;
         let max = self.pwm_max() as f64;
         let pwm = linear_map(speed, 0f64, 100f64, min, max).round() as u64;
@@ -98,18 +99,22 @@ impl Fan {
         Ok(())
     }
 
-    pub(crate) fn write_manual(&self) -> crate::Result<()> {
+    /// Change gpu fan speed management to manual (amdfand will manage speed) instead of
+    /// GPU embedded manager
+    pub fn write_manual(&self) -> crate::Result<()> {
         self.hw_mon_write(MODULATION_ENABLED_FILE, 1)
             .map_err(FanError::ManualSpeedFailed)?;
         Ok(())
     }
 
-    pub(crate) fn write_automatic(&self) -> crate::Result<()> {
+    /// Change gpu fan speed management to automatic, speed will be managed by GPU embedded manager
+    pub fn write_automatic(&self) -> crate::Result<()> {
         self.hw_mon_write("pwm1_enable", 2)
             .map_err(FanError::AutomaticSpeedFailed)?;
         Ok(())
     }
 
+    /// Change fan speed to given value with checking min-max range
     fn write_pwm(&self, value: u64) -> crate::Result<()> {
         if self.is_fan_automatic() {
             self.write_manual()?;
@@ -119,12 +124,16 @@ impl Fan {
         Ok(())
     }
 
+    /// Check if gpu fan is managed by GPU embedded manager
     pub fn is_fan_automatic(&self) -> bool {
         self.hw_mon_read(PULSE_WIDTH_MODULATION_MODE)
             .map(|s| s.as_str() == PULSE_WIDTH_MODULATION_AUTO)
             .unwrap_or_default()
     }
 
+    /// Get maximal GPU temperature from all inputs.
+    /// This is not recommended since GPU can heat differently in different parts and usually only
+    /// temp1 should be taken for consideration.
     pub fn max_gpu_temp(&self) -> crate::Result<f64> {
         if let Some(input) = self.temp_input.as_ref() {
             let value = self.read_gpu_temp(&input.as_string())?;
@@ -143,7 +152,8 @@ impl Fan {
         Ok(value)
     }
 
-    pub(crate) fn read_gpu_temp(&self, name: &str) -> crate::Result<u64> {
+    /// Read temperature from given input sensor
+    pub fn read_gpu_temp(&self, name: &str) -> crate::Result<u64> {
         let value = self
             .hw_mon_read(name)?
             .parse::<u64>()
@@ -151,6 +161,7 @@ impl Fan {
         Ok(value)
     }
 
+    /// Read minimal fan speed. Usually this is 0
     pub fn pwm_min(&mut self) -> u32 {
         if self.pwm_min.is_none() {
             self.pwm_min = Some(self.value_or(PULSE_WIDTH_MODULATION_MIN, 0));
@@ -158,6 +169,7 @@ impl Fan {
         self.pwm_min.unwrap_or_default()
     }
 
+    /// Read minimal fan speed. Usually this is 255
     pub fn pwm_max(&mut self) -> u32 {
         if self.pwm_max.is_none() {
             self.pwm_max = Some(self.value_or(PULSE_WIDTH_MODULATION_MAX, 255));

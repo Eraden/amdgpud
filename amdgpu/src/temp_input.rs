@@ -1,6 +1,7 @@
 use crate::AmdGpuError;
+use serde::Serializer;
 
-#[derive(PartialEq, Debug, Copy, Clone, serde::Serialize)]
+#[derive(PartialEq, Debug, Copy, Clone)]
 pub struct TempInput(pub u16);
 
 impl TempInput {
@@ -32,6 +33,15 @@ impl std::str::FromStr for TempInput {
         } else {
             Err(AmdGpuError::InvalidTempInput(s.to_string()))
         }
+    }
+}
+
+impl serde::Serialize for TempInput {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.as_string())
     }
 }
 

@@ -82,6 +82,8 @@ pub fn hw_mons(filter: bool) -> std::io::Result<Vec<HwMon>> {
         .collect())
 }
 
+/// Try to read from config file or create new config file.
+/// Create only if it does not exists, malformed file will raise error
 pub fn ensure_config<Config, Error, P>(config_path: P) -> std::result::Result<Config, Error>
 where
     Config: serde::Serialize + serde::de::DeserializeOwned + Default + Sized,
@@ -102,6 +104,7 @@ where
     }
 }
 
+/// Scan sysfs for sensor files
 pub fn load_temp_inputs(hw_mon: &HwMon) -> Vec<String> {
     let dir = match std::fs::read_dir(hw_mon.mon_dir()) {
         Ok(d) => d,
@@ -117,6 +120,7 @@ pub fn load_temp_inputs(hw_mon: &HwMon) -> Vec<String> {
         .collect()
 }
 
+/// Create config directory if does not exists
 pub fn ensure_config_dir() -> std::io::Result<()> {
     if std::fs::read(CONFIG_DIR).map_err(|e| e.kind() == ErrorKind::NotFound) == Err(true) {
         std::fs::create_dir_all(CONFIG_DIR)?;

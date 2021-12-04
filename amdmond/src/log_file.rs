@@ -1,9 +1,9 @@
-use crate::command::AmdMon;
-use crate::AmdMonError;
 use amdgpu::utils::hw_mons;
 use amdgpu_config::fan;
 use amdgpu_config::fan::DEFAULT_FAN_CONFIG_PATH;
 use amdgpu_config::monitor::Config;
+use amdmond_lib::errors::AmdMonError;
+use amdmond_lib::AmdMon;
 
 #[derive(gumdrop::Options)]
 pub struct LogFile {
@@ -24,7 +24,7 @@ struct Stat {
     temperature_setting: f64,
 }
 
-pub fn run(command: LogFile, config: Config) -> crate::Result<()> {
+pub fn run(command: LogFile, config: Config) -> amdmond_lib::Result<()> {
     let fan_config = fan::load_config(DEFAULT_FAN_CONFIG_PATH)?;
 
     let duration = std::time::Duration::new(

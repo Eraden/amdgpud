@@ -1,13 +1,16 @@
 use gumdrop::Options;
 
 use amdgpu::utils::hw_mons;
+use amdgpu::{config_reloaded, is_reload_required, listen_unix_signal};
 use amdgpu_config::fan::Config;
 
 use crate::command::Fan;
 use crate::AmdFanError;
 
 /// Start service which will change fan speed according to config and GPU temperature
-pub fn run(config: Config) -> crate::Result<()> {
+pub fn run(mut config: Config) -> crate::Result<()> {
+    listen_unix_signal();
+
     let mut hw_mons = Fan::wrap_all(hw_mons(true)?, &config);
 
     if hw_mons.is_empty() {
@@ -15,6 +18,12 @@ pub fn run(config: Config) -> crate::Result<()> {
     }
     let mut cache = std::collections::HashMap::new();
     loop {
+        if is_reload_required() {
+            log::info!("Reloading config...");
+            config = config.reload()?;
+            log::info!("  config reloaded");
+            config_reloaded();
+        }
         for hw_mon in hw_mons.iter_mut() {
             let gpu_temp = config
                 .temp_input()

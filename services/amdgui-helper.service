@@ -1,0 +1,10 @@
+[Unit]
+Description=AMD GPU gui helper
+After=sysinit.target local-fs.target
+[Service]
+Restart=on-failure
+RestartSec=4
+ExecStart=/usr/bin/amdgui-helper
+Environment=RUST_LOG=ERROR
+[Install]
+WantedBy=multi-user.target

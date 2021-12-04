@@ -1,6 +1,6 @@
 [package]
 name = "amdgpu"
-version = "1.0.8"
+version = "1.0.9"
 edition = "2018"
 description = "Subcomponent of AMDGPU fan control service"
 license = "MIT OR Apache-2.0"
@@ -8,11 +8,20 @@ keywords = ["hardware", "amdgpu"]
 categories = ["hardware-support"]
 repository = "https://github.com/Eraden/amdgpud"
 
+[features]
+gui-helper = []
+
 [dependencies]
 serde = { version = "1.0.126", features = ["derive"] }
 toml = { version = "0.5.8" }
-thiserror = "1.0.30"
+ron = { version = "0.7.0" }
+
+thiserror = { version = "1.0.30" }
 gumdrop = { version = "0.8.0" }
 
 log = { version = "0.4.14" }
 pretty_env_logger = { version = "0.4.0" }
+
+nix = { version = "0.23.1" }
+
+pidlock = { version = "0.1.4" }

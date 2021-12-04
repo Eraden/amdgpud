@@ -19,10 +19,10 @@ Optional arguments:
 ## Usage
 
 ```bash
-cargo install argonfand
+cargo install amdfand
 
-sudo argonfand monitor # print current temperature, current fan speed, min and max fan speed 
-sudo argonfand service # check amdgpu temperature and adjust speed from config file 
+sudo amdfand monitor # print current temperature, current fan speed, min and max fan speed 
+sudo amdfand service # check amdgpu temperature and adjust speed from config file 
 ```
 
 ## Config file

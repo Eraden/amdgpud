@@ -3,9 +3,8 @@ use std::str::FromStr;
 use amdgpu::utils::{hw_mons, linear_map};
 use amdgpu_config::fan::DEFAULT_FAN_CONFIG_PATH;
 use amdgpu_config::{fan, monitor};
-
-use crate::command::AmdMon;
-use crate::AmdMonError;
+use amdmond_lib::errors::AmdMonError;
+use amdmond_lib::AmdMon;
 
 #[derive(Debug)]
 pub enum MonitorFormat {
@@ -49,7 +48,7 @@ impl Default for Watch {
 }
 
 /// Start print cards temperature and fan speed
-pub fn run(monitor: Watch, _config: monitor::Config) -> crate::Result<()> {
+pub fn run(monitor: Watch, _config: monitor::Config) -> amdmond_lib::Result<()> {
     let fan_config = fan::load_config(DEFAULT_FAN_CONFIG_PATH)?;
     match monitor.format {
         MonitorFormat::Short => short(fan_config),
@@ -57,7 +56,7 @@ pub fn run(monitor: Watch, _config: monitor::Config) -> crate::Result<()> {
     }
 }
 
-pub fn verbose(config: fan::Config) -> crate::Result<()> {
+pub fn verbose(config: fan::Config) -> amdmond_lib::Result<()> {
     let mut hw_mons = AmdMon::wrap_all(hw_mons(true)?, &config);
 
     loop {
@@ -100,7 +99,7 @@ pub fn verbose(config: fan::Config) -> crate::Result<()> {
     }
 }
 
-pub fn short(config: fan::Config) -> crate::Result<()> {
+pub fn short(config: fan::Config) -> amdmond_lib::Result<()> {
     let mut hw_mons = AmdMon::wrap_all(hw_mons(true)?, &config);
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);

@@ -3,20 +3,37 @@ use amdgpu::{LogLevel, TempInput};
 
 pub static DEFAULT_FAN_CONFIG_PATH: &str = "/etc/amdfand/config.toml";
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Copy, Default, PartialEq)]
 pub struct MatrixPoint {
     pub temp: f64,
     pub speed: f64,
 }
 
+impl MatrixPoint {
+    pub const MIN: MatrixPoint = MatrixPoint {
+        temp: 0.0,
+        speed: 0.0,
+    };
+    pub const MAX: MatrixPoint = MatrixPoint {
+        temp: 100.0,
+        speed: 100.0,
+    };
+
+    pub fn new(temp: f64, speed: f64) -> Self {
+        Self { temp, speed }
+    }
+}
+
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct Config {
-    cards: Option<Vec<String>>,
-    log_level: LogLevel,
-    speed_matrix: Vec<MatrixPoint>,
+    #[serde(skip)]
+    path: String,
     /// One of temperature inputs /sys/class/drm/card{X}/device/hwmon/hwmon{Y}/temp{Z}_input
     /// If nothing is provided higher reading will be taken (this is not good!)
     temp_input: Option<TempInput>,
+    log_level: LogLevel,
+    cards: Option<Vec<String>>,
+    speed_matrix: Vec<MatrixPoint>,
 }
 
 impl Config {
@@ -26,6 +43,23 @@ impl Config {
     )]
     pub fn cards(&self) -> Option<&Vec<String>> {
         self.cards.as_ref()
+    }
+
+    pub fn reload(self) -> Result<Config, ConfigError> {
+        let config = load_config(&self.path)?;
+        Ok(config)
+    }
+
+    pub fn speed_matrix(&self) -> &[MatrixPoint] {
+        &self.speed_matrix
+    }
+
+    pub fn speed_matrix_mut(&mut self) -> &mut [MatrixPoint] {
+        &mut self.speed_matrix
+    }
+
+    pub fn speed_matrix_vec_mut(&mut self) -> &mut Vec<MatrixPoint> {
+        &mut self.speed_matrix
     }
 
     pub fn speed_matrix_point(&self, temp: f64) -> Option<&MatrixPoint> {
@@ -62,6 +96,10 @@ impl Config {
         self.temp_input.as_ref()
     }
 
+    pub fn path(&self) -> &str {
+        &self.path
+    }
+
     fn min_speed(&self) -> f64 {
         self.speed_matrix.first().map(|p| p.speed).unwrap_or(0f64)
     }
@@ -74,6 +112,7 @@ impl Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            path: String::from(DEFAULT_FAN_CONFIG_PATH),
             #[allow(deprecated)]
             cards: None,
             log_level: LogLevel::Error,
@@ -143,7 +182,8 @@ pub enum ConfigError {
 }
 
 pub fn load_config(config_path: &str) -> Result<Config, ConfigError> {
-    let config = ensure_config::<Config, ConfigError, _>(config_path)?;
+    let mut config = ensure_config::<Config, ConfigError, _>(config_path)?;
+    config.path = String::from(config_path);
 
     let mut last_point: Option<&MatrixPoint> = None;
 
@@ -312,5 +352,22 @@ mod speed_for_temp {
     fn above_max() {
         let config = Config::default();
         assert_eq!(config.speed_for_temp(160f64), 100f64);
+    }
+}
+
+#[cfg(test)]
+mod serde_tests {
+    use crate::fan::Config;
+
+    #[test]
+    fn serialize() {
+        let res = toml::to_string(&Config::default());
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn deserialize() {
+        let res = toml::from_str::<Config>(&toml::to_string(&Config::default()).unwrap());
+        assert!(res.is_ok());
     }
 }

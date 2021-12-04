@@ -2,7 +2,10 @@ extern crate log;
 
 use gumdrop::Options;
 
-use amdgpu::utils::{ensure_config_dir, hw_mons};
+use amdgpu::{
+    lock_file::PidLock,
+    utils::{ensure_config_dir, hw_mons},
+};
 use amdgpu_config::fan::{load_config, Config, DEFAULT_FAN_CONFIG_PATH};
 
 use crate::command::FanCommand;
@@ -29,9 +32,15 @@ pub struct Opts {
     version: bool,
     #[options(help = "Config location")]
     config: Option<String>,
+    #[options(
+        help = "Pid file name (exp. card1). This should not be path, only file name without extension"
+    )]
+    pid_file: Option<String>,
     #[options(command)]
     command: Option<command::FanCommand>,
 }
+
+static DEFAULT_PID_FILE_NAME: &str = "amdfand";
 
 fn run(config: Config) -> Result<()> {
     let opts: Opts = Opts::parse_args_default_or_exit();
@@ -47,7 +56,17 @@ fn run(config: Config) -> Result<()> {
 
     match opts.command {
         None => service::run(config),
-        Some(FanCommand::Service(_)) => service::run(config),
+        Some(FanCommand::Service(_)) => {
+            let mut pid_file = PidLock::new(
+                "amdfand",
+                opts.pid_file
+                    .unwrap_or_else(|| String::from(DEFAULT_PID_FILE_NAME)),
+            )?;
+            pid_file.acquire()?;
+            let res = service::run(config);
+            pid_file.release()?;
+            res
+        }
         Some(FanCommand::SetAutomatic(switcher)) => {
             change_mode::run(switcher, FanMode::Automatic, config)
         }
