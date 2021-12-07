@@ -1,7 +1,7 @@
 use std::io::ErrorKind;
 
-use crate::{Card, CONFIG_DIR, hw_mon, ROOT_DIR};
 use crate::hw_mon::HwMon;
+use crate::{hw_mon, Card, CONFIG_DIR, ROOT_DIR};
 
 /// linear mapping from the xrange to the yrange
 pub fn linear_map(x: f64, x1: f64, x2: f64, y1: f64, y2: f64) -> f64 {
@@ -45,10 +45,10 @@ pub fn hw_mons(filter: bool) -> std::io::Result<Vec<HwMon>> {
 }
 
 pub fn ensure_config<Config, Error, P>(config_path: P) -> std::result::Result<Config, Error>
-    where
-        Config: serde::Serialize + serde::de::DeserializeOwned + Default + Sized,
-        P: AsRef<std::path::Path>,
-        Error: From<std::io::Error>,
+where
+    Config: serde::Serialize + serde::de::DeserializeOwned + Default + Sized,
+    P: AsRef<std::path::Path>,
+    Error: From<std::io::Error>,
 {
     match std::fs::read_to_string(&config_path) {
         Ok(s) => Ok(toml::from_str::<Config>(s.as_str()).unwrap()),

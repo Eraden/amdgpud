@@ -11,7 +11,7 @@ pub fn restore_automatic() {
             pwm_min: None,
             pwm_max: None,
         })
-            .write_automatic()
+        .write_automatic()
         {
             log::error!("{}", error);
         }

@@ -30,8 +30,8 @@ impl std::str::FromStr for Card {
 
 impl<'de> Deserialize<'de> for Card {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: serde::Deserializer<'de>,
+    where
+        D: serde::Deserializer<'de>,
     {
         use serde::de::{self, Visitor};
 
@@ -45,8 +45,8 @@ impl<'de> Deserialize<'de> for Card {
             }
 
             fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-                where
-                    E: de::Error,
+            where
+                E: de::Error,
             {
                 match value.parse::<Card>() {
                     Ok(card) => Ok(*card),
@@ -68,8 +68,8 @@ impl<'de> Deserialize<'de> for Card {
 
 impl serde::Serialize for Card {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer,
+    where
+        S: serde::Serializer,
     {
         serializer.serialize_str(&self.to_string())
     }

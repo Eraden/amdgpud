@@ -3,8 +3,8 @@ use gumdrop::Options;
 use amdgpu::utils::hw_mons;
 use amdgpu_config::fan::Config;
 
-use crate::{AmdFanError, FanMode};
 use crate::command::Fan;
+use crate::{AmdFanError, FanMode};
 
 /// Change card fan mode to either automatic or manual
 pub fn run(switcher: Switcher, mode: FanMode, config: Config) -> crate::Result<()> {

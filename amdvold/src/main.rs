@@ -1,7 +1,7 @@
 use gumdrop::Options;
 
 use amdgpu::utils::ensure_config_dir;
-use amdgpu_config::voltage::{Config, load_config};
+use amdgpu_config::voltage::{load_config, Config};
 
 use crate::command::VoltageCommand;
 use crate::error::VoltageError;

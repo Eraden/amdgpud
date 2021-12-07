@@ -1,7 +1,7 @@
 use amdgpu::utils::hw_mons;
 
-use crate::{Config, VoltageError};
 use crate::command::VoltageManipulator;
+use crate::{Config, VoltageError};
 
 #[derive(Debug, gumdrop::Options)]
 pub struct ApplyChanges {
