@@ -5,6 +5,7 @@ pidfile="/run/${SVCNAME}.pid"
 command="/usr/bin/amdvold"
 command_args="service"
 command_user="root"
+command_background=true
 
 depend() {
     need udev

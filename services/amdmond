@@ -5,6 +5,7 @@ pidfile="/run/${SVCNAME}.pid"
 command="/usr/bin/amdfand log_file -s /var/log/amdmon.csv"
 command_args="service"
 command_user="root"
+command_background=true
 
 depend() {
     need udev

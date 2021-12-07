@@ -153,8 +153,7 @@ pub fn load_config(config_path: &str) -> Result<Config, ConfigError> {
             return Err(ConfigError::FanSpeedTooLow {
                 value: matrix_point.speed,
                 index,
-            }
-            .into());
+            });
         }
         if matrix_point.speed > 100f64 {
             log::error!(
@@ -164,8 +163,7 @@ pub fn load_config(config_path: &str) -> Result<Config, ConfigError> {
             return Err(ConfigError::FanSpeedTooHigh {
                 value: matrix_point.speed,
                 index,
-            }
-            .into());
+            });
         }
         if let Some(last_point) = last_point {
             if matrix_point.speed < last_point.speed {
@@ -179,8 +177,7 @@ pub fn load_config(config_path: &str) -> Result<Config, ConfigError> {
                     current: matrix_point.speed,
                     last: last_point.speed,
                     index,
-                }
-                .into());
+                });
             }
             if matrix_point.temp < last_point.temp {
                 log::error!(
@@ -193,8 +190,7 @@ pub fn load_config(config_path: &str) -> Result<Config, ConfigError> {
                     current: matrix_point.temp,
                     last: last_point.temp,
                     index,
-                }
-                .into());
+                });
             }
         }
 
