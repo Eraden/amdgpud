@@ -1,4 +1,4 @@
-use amdgpu::AmdGpuError;
+use amdgpu::{utils, AmdGpuError};
 use amdgpu_config::voltage::ConfigError;
 
 use crate::change_state::ChangeStateError;
@@ -20,4 +20,6 @@ pub enum VoltageError {
     ClockState(#[from] ClockStateError),
     #[error("{0:}")]
     ChangeStateError(#[from] ChangeStateError),
+    #[error("{0:}")]
+    AmdUtils(#[from] utils::AmdGpuError),
 }

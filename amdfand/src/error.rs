@@ -1,4 +1,4 @@
-use amdgpu::AmdGpuError;
+use amdgpu::{utils, AmdGpuError};
 use amdgpu_config::fan::ConfigError;
 
 use crate::command::FanError;
@@ -19,4 +19,6 @@ pub enum AmdFanError {
     Config(#[from] ConfigError),
     #[error("{0:}")]
     Io(#[from] std::io::Error),
+    #[error("{0:}")]
+    AmdUtils(#[from] utils::AmdGpuError),
 }

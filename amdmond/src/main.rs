@@ -2,6 +2,7 @@ mod command;
 mod log_file;
 mod watch;
 
+use amdgpu::utils;
 use gumdrop::Options;
 
 use crate::command::Command;
@@ -19,6 +20,8 @@ pub enum AmdMonError {
     MonConfigError(#[from] monitor::ConfigError),
     #[error("{0}")]
     FanConfigError(#[from] fan::ConfigError),
+    #[error("{0}")]
+    AmdUtils(#[from] utils::AmdGpuError),
     #[error("{0}")]
     Csv(#[from] csv::Error),
     #[error("AMD GPU temperature is malformed. It should be number. {0:?}")]

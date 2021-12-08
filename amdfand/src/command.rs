@@ -3,8 +3,8 @@ use gumdrop::Options;
 use amdgpu::hw_mon::HwMon;
 use amdgpu::utils::{linear_map, load_temp_inputs};
 use amdgpu::{
-    TempInput, PULSE_WIDTH_MODULATION_AUTO, PULSE_WIDTH_MODULATION_MAX, PULSE_WIDTH_MODULATION_MIN,
-    PULSE_WIDTH_MODULATION_MODE,
+    utils, TempInput, PULSE_WIDTH_MODULATION_AUTO, PULSE_WIDTH_MODULATION_MAX,
+    PULSE_WIDTH_MODULATION_MIN, PULSE_WIDTH_MODULATION_MODE,
 };
 use amdgpu_config::fan::Config;
 
@@ -37,11 +37,14 @@ pub enum FanError {
     #[error("Failed to read AMD GPU temperatures from tempX_input. No input was found")]
     EmptyTempSet,
     #[error("Unable to change fan speed to manual mode. {0}")]
-    ManualSpeedFailed(std::io::Error),
+    ManualSpeedFailed(utils::AmdGpuError),
     #[error("Unable to change fan speed to automatic mode. {0}")]
-    AutomaticSpeedFailed(std::io::Error),
+    AutomaticSpeedFailed(utils::AmdGpuError),
     #[error("Unable to change AMD GPU modulation (a.k.a. speed) to {value}. {error}")]
-    FailedToChangeSpeed { value: u64, error: std::io::Error },
+    FailedToChangeSpeed {
+        value: u64,
+        error: utils::AmdGpuError,
+    },
 }
 
 pub struct Fan {

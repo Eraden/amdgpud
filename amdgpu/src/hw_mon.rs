@@ -1,4 +1,4 @@
-use crate::{AmdGpuError, Card, ROOT_DIR};
+use crate::{utils, AmdGpuError, Card, ROOT_DIR};
 
 #[derive(Debug)]
 pub struct HwMonName(pub String);
@@ -30,7 +30,7 @@ impl HwMon {
     }
 
     #[inline]
-    pub fn name(&self) -> std::io::Result<String> {
+    pub fn name(&self) -> utils::Result<String> {
         self.hw_mon_read("name")
     }
 
@@ -70,21 +70,21 @@ impl HwMon {
             .unwrap_or(fallback)
     }
 
-    pub fn hw_mon_read(&self, name: &str) -> std::io::Result<String> {
-        std::fs::read_to_string(self.mon_file_path(name)).map(|s| String::from(s.trim()))
+    pub fn hw_mon_read(&self, name: &str) -> utils::Result<String> {
+        utils::read_to_string(self.mon_file_path(name)).map(|s| String::from(s.trim()))
     }
 
-    pub fn device_read(&self, name: &str) -> std::io::Result<String> {
-        std::fs::read_to_string(self.device_dir().join(name)).map(|s| String::from(s.trim()))
+    pub fn device_read(&self, name: &str) -> utils::Result<String> {
+        utils::read_to_string(self.device_dir().join(name)).map(|s| String::from(s.trim()))
     }
 
-    pub fn hw_mon_write(&self, name: &str, value: u64) -> std::io::Result<()> {
-        std::fs::write(self.mon_file_path(name), format!("{}", value))?;
+    pub fn hw_mon_write(&self, name: &str, value: u64) -> utils::Result<()> {
+        utils::write(self.mon_file_path(name), format!("{}", value))?;
         Ok(())
     }
 
-    pub fn device_write<C: AsRef<[u8]>>(&self, name: &str, value: C) -> std::io::Result<()> {
-        std::fs::write(self.device_dir().join(name), value)?;
+    pub fn device_write<C: AsRef<[u8]>>(&self, name: &str, value: C) -> utils::Result<()> {
+        utils::write(self.device_dir().join(name), value)?;
         Ok(())
     }
 }

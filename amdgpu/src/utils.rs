@@ -3,6 +3,44 @@ use std::io::ErrorKind;
 use crate::hw_mon::HwMon;
 use crate::{hw_mon, Card, CONFIG_DIR, ROOT_DIR};
 
+pub type Result<T> = std::result::Result<T, AmdGpuError>;
+
+#[derive(Debug, thiserror::Error)]
+pub enum AmdGpuError {
+    #[error("Write to {path:?} failed. {io}")]
+    Write { io: std::io::Error, path: String },
+    #[error("Read from {path:?} failed. {io}")]
+    Read { io: std::io::Error, path: String },
+    #[error("File {0:?} does not exists")]
+    FileNotFound(String),
+}
+
+pub fn read_to_string<P: AsRef<std::path::Path>>(path: P) -> Result<String> {
+    std::fs::read_to_string(&path).map_err(|io| {
+        if io.kind() == std::io::ErrorKind::NotFound {
+            AmdGpuError::FileNotFound(path.as_ref().to_str().map(String::from).unwrap_or_default())
+        } else {
+            AmdGpuError::Read {
+                io,
+                path: path.as_ref().to_str().map(String::from).unwrap_or_default(),
+            }
+        }
+    })
+}
+
+pub fn write<P: AsRef<std::path::Path>, C: AsRef<[u8]>>(path: P, contents: C) -> Result<()> {
+    std::fs::write(&path, contents).map_err(|io| {
+        if io.kind() == std::io::ErrorKind::NotFound {
+            AmdGpuError::FileNotFound(path.as_ref().to_str().map(String::from).unwrap_or_default())
+        } else {
+            AmdGpuError::Write {
+                io,
+                path: path.as_ref().to_str().map(String::from).unwrap_or_default(),
+            }
+        }
+    })
+}
+
 /// linear mapping from the xrange to the yrange
 pub fn linear_map(x: f64, x1: f64, x2: f64, y1: f64, y2: f64) -> f64 {
     let m = (y2 - y1) / (x2 - x1);
