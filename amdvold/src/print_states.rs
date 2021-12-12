@@ -1,6 +1,7 @@
+use amdgpu::utils::hw_mons;
+
 use crate::command::VoltageManipulator;
 use crate::Config;
-use amdgpu::utils::hw_mons;
 
 #[derive(Debug, gumdrop::Options)]
 pub struct PrintStates {

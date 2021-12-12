@@ -1,9 +1,11 @@
-use crate::command::Fan;
-use crate::AmdFanError;
-use amdgpu::utils::{hw_mons, linear_map};
 use std::str::FromStr;
 
-use crate::config::Config;
+use amdgpu::utils::{hw_mons, linear_map};
+use amdgpu_config::fan::DEFAULT_FAN_CONFIG_PATH;
+use amdgpu_config::{fan, monitor};
+
+use crate::command::AmdMon;
+use crate::AmdMonError;
 
 #[derive(Debug)]
 pub enum MonitorFormat {
@@ -18,35 +20,45 @@ impl Default for MonitorFormat {
 }
 
 impl FromStr for MonitorFormat {
-    type Err = AmdFanError;
+    type Err = AmdMonError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "short" | "s" => Ok(MonitorFormat::Short),
             "verbose" | "v" | "long" | "l" => Ok(MonitorFormat::Verbose),
-            _ => Err(AmdFanError::InvalidMonitorFormat),
+            _ => Err(AmdMonError::InvalidMonitorFormat),
         }
     }
 }
 
 #[derive(Debug, gumdrop::Options)]
-pub struct Monitor {
+pub struct Watch {
     #[options(help = "Help message")]
     help: bool,
-    #[options(help = "Help message")]
+    #[options(help = "Monitor format")]
     format: MonitorFormat,
 }
 
-/// Start print cards temperature and fan speed
-pub fn run(monitor: Monitor, config: Config) -> crate::Result<()> {
-    match monitor.format {
-        MonitorFormat::Short => short(config),
-        MonitorFormat::Verbose => verbose(config),
+impl Default for Watch {
+    fn default() -> Self {
+        Self {
+            help: false,
+            format: MonitorFormat::Short,
+        }
     }
 }
 
-pub fn verbose(config: Config) -> crate::Result<()> {
-    let mut hw_mons = Fan::wrap_all(hw_mons(true)?, &config);
+/// Start print cards temperature and fan speed
+pub fn run(monitor: Watch, _config: monitor::Config) -> crate::Result<()> {
+    let fan_config = fan::load_config(DEFAULT_FAN_CONFIG_PATH)?;
+    match monitor.format {
+        MonitorFormat::Short => short(fan_config),
+        MonitorFormat::Verbose => verbose(fan_config),
+    }
+}
+
+pub fn verbose(config: fan::Config) -> crate::Result<()> {
+    let mut hw_mons = AmdMon::wrap_all(hw_mons(true)?, &config);
 
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
@@ -67,7 +79,7 @@ pub fn verbose(config: Config) -> crate::Result<()> {
                     min as f64,
                     max as f64,
                     0f64,
-                    100f64
+                    100f64,
                 ))
                 .round(),
             );
@@ -88,8 +100,8 @@ pub fn verbose(config: Config) -> crate::Result<()> {
     }
 }
 
-pub fn short(config: Config) -> crate::Result<()> {
-    let mut hw_mons = Fan::wrap_all(hw_mons(true)?, &config);
+pub fn short(config: fan::Config) -> crate::Result<()> {
+    let mut hw_mons = AmdMon::wrap_all(hw_mons(true)?, &config);
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
         for hw_mon in hw_mons.iter_mut() {
@@ -110,7 +122,7 @@ pub fn short(config: Config) -> crate::Result<()> {
                     min as f64,
                     max as f64,
                     0f64,
-                    100f64
+                    100f64,
                 )
                 .round(),
             );

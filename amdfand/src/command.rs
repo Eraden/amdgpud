@@ -1,23 +1,14 @@
-use crate::{change_mode, monitor, service, Config};
-use amdgpu::hw_mon::HwMon;
-use amdgpu::utils::linear_map;
-use amdgpu::TempInput;
 use gumdrop::Options;
 
-/// pulse width modulation fan control minimum level (0)
-const PULSE_WIDTH_MODULATION_MIN: &str = "pwm1_min";
+use amdgpu::hw_mon::HwMon;
+use amdgpu::utils::{linear_map, load_temp_inputs};
+use amdgpu::{
+    utils, TempInput, PULSE_WIDTH_MODULATION_AUTO, PULSE_WIDTH_MODULATION_MAX,
+    PULSE_WIDTH_MODULATION_MIN, PULSE_WIDTH_MODULATION_MODE,
+};
+use amdgpu_config::fan::Config;
 
-/// pulse width modulation fan control maximum level (255)
-const PULSE_WIDTH_MODULATION_MAX: &str = "pwm1_max";
-
-/// pulse width modulation fan level (0-255)
-const PULSE_WIDTH_MODULATION: &str = "pwm1";
-
-/// pulse width modulation fan control method (0: no fan speed control, 1: manual fan speed control using pwm interface, 2: automatic fan speed control)
-const PULSE_WIDTH_MODULATION_MODE: &str = "pwm1_enable";
-
-// static PULSE_WIDTH_MODULATION_DISABLED: &str = "0";
-const PULSE_WIDTH_MODULATION_AUTO: &str = "2";
+use crate::{change_mode, service};
 
 #[derive(Debug, Options)]
 pub struct AvailableCards {
@@ -27,8 +18,6 @@ pub struct AvailableCards {
 
 #[derive(Debug, Options)]
 pub enum FanCommand {
-    #[options(help = "Print current temperature and fan speed")]
-    Monitor(monitor::Monitor),
     #[options(help = "Check AMD GPU temperature and change fan speed depends on configuration")]
     Service(service::Service),
     #[options(help = "Switch GPU to automatic fan speed control")]
@@ -48,11 +37,14 @@ pub enum FanError {
     #[error("Failed to read AMD GPU temperatures from tempX_input. No input was found")]
     EmptyTempSet,
     #[error("Unable to change fan speed to manual mode. {0}")]
-    ManualSpeedFailed(std::io::Error),
+    ManualSpeedFailed(utils::AmdGpuError),
     #[error("Unable to change fan speed to automatic mode. {0}")]
-    AutomaticSpeedFailed(std::io::Error),
+    AutomaticSpeedFailed(utils::AmdGpuError),
     #[error("Unable to change AMD GPU modulation (a.k.a. speed) to {value}. {error}")]
-    FailedToChangeSpeed { value: u64, error: std::io::Error },
+    FailedToChangeSpeed {
+        value: u64,
+        error: utils::AmdGpuError,
+    },
 }
 
 pub struct Fan {
@@ -81,6 +73,8 @@ impl std::ops::DerefMut for Fan {
     }
 }
 
+const MODULATION_ENABLED_FILE: &str = "pwm1_enable";
+
 impl Fan {
     pub fn wrap(hw_mon: HwMon, config: &Config) -> Self {
         Self {
@@ -105,7 +99,7 @@ impl Fan {
     }
 
     pub(crate) fn write_manual(&self) -> crate::Result<()> {
-        self.hw_mon_write("pwm1_enable", 1)
+        self.hw_mon_write(MODULATION_ENABLED_FILE, 1)
             .map_err(FanError::ManualSpeedFailed)?;
         Ok(())
     }
@@ -123,27 +117,6 @@ impl Fan {
         self.hw_mon_write("pwm1", value)
             .map_err(|error| FanError::FailedToChangeSpeed { value, error })?;
         Ok(())
-    }
-    pub fn pwm_min(&mut self) -> u32 {
-        if self.pwm_min.is_none() {
-            self.pwm_min = Some(self.value_or(PULSE_WIDTH_MODULATION_MIN, 0));
-        };
-        self.pwm_min.unwrap_or_default()
-    }
-
-    pub fn pwm_max(&mut self) -> u32 {
-        if self.pwm_max.is_none() {
-            self.pwm_max = Some(self.value_or(PULSE_WIDTH_MODULATION_MAX, 255));
-        };
-        self.pwm_max.unwrap_or(255)
-    }
-
-    pub fn pwm(&self) -> crate::Result<u32> {
-        let value = self
-            .hw_mon_read(PULSE_WIDTH_MODULATION)?
-            .parse()
-            .map_err(FanError::NonIntPwm)?;
-        Ok(value)
     }
 
     pub fn is_fan_automatic(&self) -> bool {
@@ -170,19 +143,6 @@ impl Fan {
         Ok(value)
     }
 
-    pub fn gpu_temp(&self) -> Vec<(String, crate::Result<f64>)> {
-        self.temp_inputs
-            .clone()
-            .into_iter()
-            .map(|name| {
-                let temp = self
-                    .read_gpu_temp(name.as_str())
-                    .map(|temp| temp as f64 / 1000f64);
-                (name, temp)
-            })
-            .collect()
-    }
-
     pub(crate) fn read_gpu_temp(&self, name: &str) -> crate::Result<u64> {
         let value = self
             .hw_mon_read(name)?
@@ -190,19 +150,18 @@ impl Fan {
             .map_err(FanError::NonIntTemp)?;
         Ok(value)
     }
-}
 
-fn load_temp_inputs(hw_mon: &HwMon) -> Vec<String> {
-    let dir = match std::fs::read_dir(hw_mon.mon_dir()) {
-        Ok(d) => d,
-        _ => return vec![],
-    };
-    dir.filter_map(|f| f.ok())
-        .filter_map(|f| {
-            f.file_name()
-                .to_str()
-                .filter(|s| s.starts_with("temp") && s.ends_with("_input"))
-                .map(String::from)
-        })
-        .collect()
+    pub fn pwm_min(&mut self) -> u32 {
+        if self.pwm_min.is_none() {
+            self.pwm_min = Some(self.value_or(PULSE_WIDTH_MODULATION_MIN, 0));
+        };
+        self.pwm_min.unwrap_or_default()
+    }
+
+    pub fn pwm_max(&mut self) -> u32 {
+        if self.pwm_max.is_none() {
+            self.pwm_max = Some(self.value_or(PULSE_WIDTH_MODULATION_MAX, 255));
+        };
+        self.pwm_max.unwrap_or(255)
+    }
 }

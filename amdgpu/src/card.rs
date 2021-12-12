@@ -1,5 +1,6 @@
-use crate::AmdGpuError;
 use serde::Deserialize;
+
+use crate::AmdGpuError;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Card(pub u32);

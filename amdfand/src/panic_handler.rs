@@ -1,5 +1,6 @@
-use crate::command::Fan;
 use amdgpu::utils::hw_mons;
+
+use crate::command::Fan;
 
 pub fn restore_automatic() {
     for hw in hw_mons(true).unwrap_or_default() {
