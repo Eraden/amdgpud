@@ -2,6 +2,10 @@
 name = "amdgpu-config"
 version = "1.0.8"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+keywords = ["hardware", "amdgpu"]
+categories = ["hardware-support"]
+repository = "https://github.com/Eraden/amdgpud"
 
 [lib]
 name = "amdgpu_config"
