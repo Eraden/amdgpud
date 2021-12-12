@@ -2,6 +2,7 @@
 name = "amdgpu-config"
 version = "1.0.8"
 edition = "2021"
+description = "Subcomponent of AMDGPU tools"
 license = "MIT OR Apache-2.0"
 keywords = ["hardware", "amdgpu"]
 categories = ["hardware-support"]
