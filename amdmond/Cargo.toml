@@ -2,6 +2,11 @@
 name = "amdmond"
 version = "1.0.8"
 edition = "2021"
+description = "AMD GPU monitoring tool for Linux"
+license = "MIT OR Apache-2.0"
+keywords = ["hardware", "amdgpu"]
+categories = ["hardware-support"]
+repository = "https://github.com/Eraden/amdgpud"
 
 [dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0.8" }
