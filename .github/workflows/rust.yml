@@ -60,7 +60,7 @@ jobs:
         run: cargo clippy -- -D warnings
 
   build:
-     needs: [clippy, tests]
+    needs: [clippy, tests]
     strategy:
       fail-fast: false
       matrix:
