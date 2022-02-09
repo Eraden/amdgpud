@@ -14,5 +14,15 @@ cargo publish
 cd $(git_root)/amdvold
 cargo publish
 
+cd $(git_root)/amdmond-lib
+cargo publish
+
 cd $(git_root)/amdmond
+cargo publish
+
+cd $(git_root)/amdgui-helper
+cargo publish
+
+
+cd $(git_root)/amdguid
 cargo publish

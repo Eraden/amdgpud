@@ -51,3 +51,20 @@ pub fn load_config(config_path: &str) -> Result<Config, ConfigError> {
 
     Ok(config)
 }
+
+#[cfg(test)]
+mod serde_tests {
+    use crate::monitor::Config;
+
+    #[test]
+    fn serialize() {
+        let res = toml::to_string(&Config::default());
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn deserialize() {
+        let res = toml::from_str::<Config>(&toml::to_string(&Config::default()).unwrap());
+        assert!(res.is_ok());
+    }
+}

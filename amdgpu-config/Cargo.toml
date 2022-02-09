@@ -1,6 +1,6 @@
 [package]
 name = "amdgpu-config"
-version = "1.0.8"
+version = "1.0.9"
 edition = "2021"
 description = "Subcomponent of AMDGPU tools"
 license = "MIT OR Apache-2.0"
@@ -16,9 +16,10 @@ path = "./src/lib.rs"
 fan = []
 voltage = []
 monitor = []
+gui = []
 
 [dependencies]
-amdgpu = { path = "../amdgpu", version = "1.0.8" }
+amdgpu = { path = "../amdgpu", version = "1.0.9" }
 
 serde = { version = "1.0.126", features = ["derive"] }
 toml = { version = "0.5.8" }

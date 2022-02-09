@@ -6,7 +6,10 @@ pub use temp_input::*;
 
 mod card;
 mod error;
+#[cfg(feature = "gui-helper")]
+pub mod helper_cmd;
 pub mod hw_mon;
+pub mod lock_file;
 mod temp_input;
 pub mod utils;
 
@@ -29,6 +32,38 @@ pub static PULSE_WIDTH_MODULATION_MODE: &str = "pwm1_enable";
 
 // static PULSE_WIDTH_MODULATION_DISABLED: &str = "0";
 pub static PULSE_WIDTH_MODULATION_AUTO: &str = "2";
+
+static mut RELOAD_CONFIG: bool = false;
+
+extern "C" fn sig_reload(_n: i32) {
+    unsafe {
+        RELOAD_CONFIG = true;
+    };
+}
+
+/// Listen for SIGHUP signal. This signal is used to reload config
+pub fn listen_unix_signal() {
+    use nix::sys::signal::{sigaction, SaFlags, SigAction, SigHandler, SigSet, Signal};
+    unsafe {
+        let handler: SigHandler = SigHandler::Handler(sig_reload);
+        let action = SigAction::new(handler, SaFlags::SA_NOCLDWAIT, SigSet::empty());
+        sigaction(Signal::SIGHUP, &action).expect("Failed to mount action handler");
+    };
+}
+
+/// Check if application received SIGHUP and must reload config file
+#[inline(always)]
+pub fn is_reload_required() -> bool {
+    unsafe { RELOAD_CONFIG }
+}
+
+/// Reset reload config flag
+#[inline(always)]
+pub fn config_reloaded() {
+    unsafe {
+        RELOAD_CONFIG = false;
+    }
+}
 
 pub type Result<T> = std::result::Result<T, AmdGpuError>;
 

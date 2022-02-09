@@ -1,5 +1,7 @@
 #[cfg(feature = "fan")]
 pub mod fan;
+#[cfg(feature = "gui")]
+pub mod gui;
 #[cfg(feature = "monitor")]
 pub mod monitor;
 #[cfg(feature = "voltage")]

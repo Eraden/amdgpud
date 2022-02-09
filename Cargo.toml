@@ -1,2 +1,11 @@
 [workspace]
-members = ["amdgpu", "amdgpu-config", "amdfand", "amdvold", "amdmond"]
+members = [
+    "amdgpu",
+    "amdgpu-config",
+    "amdfand",
+    "amdvold",
+    "amdmond",
+    "amdmond-lib",
+    "amdguid",
+    "amdgui-helper",
+]

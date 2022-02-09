@@ -1,4 +1,4 @@
-use crate::{utils, AmdGpuError, Card, ROOT_DIR};
+use crate::{utils, AmdGpuError, Card, IoFailure, ROOT_DIR};
 
 #[derive(Debug)]
 pub struct HwMonName(pub String);
@@ -100,7 +100,10 @@ fn hw_mon_dirs_path(card: &Card) -> std::path::PathBuf {
 
 pub fn open_hw_mon(card: Card) -> crate::Result<HwMon> {
     let read_path = hw_mon_dirs_path(&card);
-    let entries = std::fs::read_dir(read_path)?;
+    let entries = std::fs::read_dir(&read_path).map_err(|io| IoFailure {
+        io,
+        path: read_path,
+    })?;
     let name = entries
         .filter_map(|entry| entry.ok())
         .filter_map(|entry| {

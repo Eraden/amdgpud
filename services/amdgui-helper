@@ -1,0 +1,12 @@
+#!/sbin/openrc-run
+
+description="amdgui helper service"
+pidfile="/run/${SVCNAME}.pid"
+command="/usr/bin/amdgui-helper"
+command_args="service"
+command_user="root"
+command_background=true
+
+depend() {
+    need udev
+}
