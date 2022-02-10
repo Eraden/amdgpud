@@ -127,10 +127,13 @@ dependencies = [
  "egui",
  "egui-winit",
  "egui_glium",
+ "egui_glow",
  "egui_vulkano",
  "epaint",
  "epi",
  "glium",
+ "glow",
+ "glutin",
  "gumdrop",
  "log",
  "nix 0.23.1",
@@ -755,6 +758,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui_glow"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4fba815b217b8d4c17dcd080497d9ea2ad0e2047aec8d584db1c7c4a28e978db"
+dependencies = [
+ "egui",
+ "egui-winit",
+ "epi",
+ "glow",
+ "glutin",
+ "memoffset",
+]
+
+[[package]]
 name = "egui_vulkano"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -879,6 +896,18 @@ dependencies = [
  "memoffset",
  "smallvec",
  "takeable-option",
+]
+
+[[package]]
+name = "glow"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8bd5877156a19b8ac83a29b2306fe20537429d318f3ff0a1a2119f8d9c61919"
+dependencies = [
+ "js-sys",
+ "slotmap",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
@@ -1775,6 +1804,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e51e73328dc4ac0c7ccbda3a494dfa03df1de2f46018127f60c693f2648455b0"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "slotmap"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1e08e261d0e8f5c43123b7adf3e4ca1690d655377ac93a03b2c9d3e98de1342"
+dependencies = [
+ "version_check",
 ]
 
 [[package]]
