@@ -1,4 +1,5 @@
 ![GitHub](https://img.shields.io/github/license/Eraden/amdgpud)
+[![amdgpud](https://badgen.net/badge/Discord%20Activity/Currently%20Online/green?icon=discord)](https://discord.gg/nCyndSCJ)
 
 # AMD GPU management tools
 
