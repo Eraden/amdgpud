@@ -16,7 +16,8 @@ wayland = [
     "vulkano-shaders",
     "_gui"
 ]
-xorg = ["glium", "egui_glium", "_gui"]
+xorg-glium = ["glium", "egui_glium", "_gui"]
+xorg-glow = ["glow", "egui_glow", "glutin", "_gui"]
 default = ["wayland"]
 _gui = [
     "egui",
@@ -49,9 +50,13 @@ egui_vulkano = { version = "0.4.0", optional = true }
 vulkano-win = { version = "0.25.0", optional = true }
 vulkano = { version = "0.25.0", optional = true }
 vulkano-shaders = { version = "0.25.0", optional = true }
-# xorg
+# xorg glium
 glium = { version = "0.30", optional = true }
 egui_glium = { version = "0.15.0", optional = true }
+# xorg glow
+glutin = { version = "0.27.0", optional = true }
+glow = { version = "0.11.2", optional = true }
+egui_glow = { version = "0.15.0", optional = true }
 
 tokio = { version = "1.15.0", features = ["full"] }
 parking_lot = { version = "0.11.2" }

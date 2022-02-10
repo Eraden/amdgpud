@@ -1,9 +1,8 @@
-use crate::app::{AmdGui, Page};
-use egui::panel::TopBottomSide;
-use egui::{Layout, PointerButton};
-use epaint::TextStyle;
+use crate::app::AmdGui;
+use crate::backend::create_ui;
 use parking_lot::Mutex;
 use std::sync::Arc;
+use tokio::sync::mpsc::UnboundedReceiver;
 use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer};
 use vulkano::command_buffer::{
     AutoCommandBufferBuilder, CommandBufferUsage, DynamicState, SubpassContents,
@@ -52,7 +51,7 @@ struct Vertex {
     position: [f32; 2],
 }
 
-pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>) {
+pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, _receiver: UnboundedReceiver<bool>) {
     let required_extensions = vulkano_win::required_extensions();
     let instance =
         vulkano::instance::Instance::new(None, Version::V1_0, &required_extensions, None).unwrap();
@@ -213,7 +212,7 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>) {
                     // do your own event handling here
                 };
             }
-            Event::RedrawEventsCleared => {
+            Event::UserEvent(_) | Event::RedrawEventsCleared => {
                 previous_frame_end.as_mut().unwrap().cleanup_finished();
 
                 if recreate_swap_chain {
@@ -275,47 +274,7 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>) {
 
                 egui_ctx.begin_frame(egui_winit.take_egui_input(surface.window()));
 
-                egui::containers::TopBottomPanel::new(TopBottomSide::Top, "menu").show(
-                    &egui_ctx,
-                    |ui| {
-                        let mut child =
-                            ui.child_ui(ui.available_rect_before_wrap(), Layout::left_to_right());
-                        if child
-                            .add(egui::Button::new("Config").text_style(TextStyle::Heading))
-                            .clicked_by(PointerButton::Primary)
-                        {
-                            amd_gui.lock().page = Page::Config;
-                        }
-                        if child
-                            .add(egui::Button::new("Monitoring").text_style(TextStyle::Heading))
-                            .clicked_by(PointerButton::Primary)
-                        {
-                            amd_gui.lock().page = Page::Monitoring;
-                        }
-                        if child
-                            .add(egui::Button::new("Settings").text_style(TextStyle::Heading))
-                            .clicked_by(PointerButton::Primary)
-                        {
-                            amd_gui.lock().page = Page::Settings;
-                        }
-                    },
-                );
-
-                egui::containers::CentralPanel::default().show(&egui_ctx, |ui| {
-                    let mut gui = amd_gui.lock();
-                    let page = gui.page;
-                    match page {
-                        Page::Config => {
-                            gui.ui(ui);
-                        }
-                        Page::Monitoring => {
-                            gui.ui(ui);
-                        }
-                        Page::Settings => {
-                            egui_ctx.settings_ui(ui);
-                        }
-                    }
-                });
+                create_ui(amd_gui.clone(), &egui_ctx);
 
                 let (egui_output, clipped_shapes) = egui_ctx.end_frame();
                 egui_winit.handle_output(surface.window(), &egui_ctx, egui_output);
