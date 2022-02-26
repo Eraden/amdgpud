@@ -1,5 +1,6 @@
 #[cfg(feature = "gui-helper")]
 use crate::helper_cmd::GuiHelperError;
+use crate::lock_file::LockFileError;
 use pidlock::PidlockError;
 use std::fmt::{Debug, Display, Formatter};
 
