@@ -46,6 +46,8 @@ pub enum AmdGpuError {
     #[cfg(feature = "gui-helper")]
     #[error("{0:?}")]
     GuiHelper(#[from] GuiHelperError),
+    #[error("{0:?}")]
+    LockFile(#[from] LockFileError),
 }
 
 #[derive(Debug, thiserror::Error)]

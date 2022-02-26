@@ -1,10 +1,36 @@
 //! Create lock file and prevent running 2 identical services.
 //! NOTE: For 2 amdfand services you may just give 2 different names
 
-use crate::{IoFailure, PidLockError};
+use crate::helper_cmd::Pid;
+use crate::IoFailure;
+use nix::libc;
 use std::path::Path;
 
-pub struct PidLock(pidlock::Pidlock);
+#[derive(Debug, thiserror::Error)]
+pub enum LockFileError {
+    #[error("Failed to read {path}. {err:?}")]
+    Unreadable { err: std::io::Error, path: String },
+    #[error("Pid {pid:?} file system error. {err:?}")]
+    Io { err: std::io::Error, pid: Pid },
+    #[error("Pid {0:?} does not exists")]
+    NotExists(Pid),
+    #[error("Pid {pid:?} with name {name:?} already exists")]
+    Conflict { name: String, pid: Pid },
+    #[error("Can't parse Pid value. {0:?}")]
+    MalformedPidFile(#[from] std::num::ParseIntError),
+}
+
+pub enum State {
+    NotExists,
+    Pending(Pid),
+    Dead,
+    New(Pid),
+}
+
+pub struct PidLock {
+    name: String,
+    pid_path: String,
+}
 
 impl PidLock {
     pub fn new<P: AsRef<Path>>(
@@ -23,22 +49,84 @@ impl PidLock {
                 .map(String::from)
                 .unwrap()
         };
-        let pid_file = pidlock::Pidlock::new(&pid_path);
-        Ok(Self(pid_file))
+        Ok(Self { pid_path, name })
     }
 
     /// Create new lock file. File will be created if:
     /// * pid file does not exists
     /// * pid file exists but process is dead
     pub fn acquire(&mut self) -> Result<(), crate::error::AmdGpuError> {
-        self.0.acquire().map_err(PidLockError::from)?;
+        let pid = self.process_pid();
+        if let Some(old) = self.old_pid() {
+            let old = old?;
+            if !self.is_alive(old) {
+                self.enforce_pid_file(pid)?;
+                return Ok(());
+            }
+            match self.process_name(old) {
+                Err(LockFileError::NotExists(..)) => {
+                    self.enforce_pid_file(old)?;
+                }
+                Err(e) => return Err(e.into()),
+                Ok(name) if name == self.name => {
+                    return Err(LockFileError::Conflict { pid: old, name }.into())
+                }
+                Ok(_ /*name isn't the same*/) => {
+                    self.enforce_pid_file(old)?;
+                }
+            }
+        } else {
+            self.enforce_pid_file(pid)?;
+        }
         Ok(())
     }
 
     /// Remove lock file
     /// Remove lock file
     pub fn release(&mut self) -> Result<(), crate::error::AmdGpuError> {
-        self.0.release().map_err(PidLockError::from)?;
+        if let Err(e) = std::fs::remove_file(&self.pid_path) {
+            log::error!("Failed to release pid file {}. {:?}", self.pid_path, e);
+        }
         Ok(())
+    }
+
+    fn old_pid(&self) -> Option<Result<Pid, LockFileError>> {
+        match std::fs::read_to_string(&self.pid_path) {
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
+            Err(e) => Some(Err(LockFileError::Unreadable {
+                path: self.pid_path.clone(),
+                err: e,
+            })),
+            Ok(s) => match s.parse::<i32>() {
+                Err(e) => Some(Err(LockFileError::MalformedPidFile(e))),
+                Ok(pid) => Some(Ok(Pid(pid))),
+            },
+        }
+    }
+
+    fn is_alive(&self, pid: Pid) -> bool {
+        unsafe {
+            let result = libc::kill(pid.0, 0);
+            result == 0
+        }
+    }
+
+    fn process_pid(&self) -> Pid {
+        Pid(std::process::id() as i32)
+    }
+
+    fn process_name(&self, pid: Pid) -> Result<String, LockFileError> {
+        match std::fs::read_to_string(format!("/proc/{}/cmdline", pid.to_string())) {
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                Err(LockFileError::NotExists(pid))
+            }
+            Err(err) => Err(LockFileError::Io { err, pid }),
+            Ok(s) => Ok(s),
+        }
+    }
+
+    fn enforce_pid_file(&self, pid: Pid) -> Result<(), LockFileError> {
+        std::fs::write(&self.pid_path, format!("{}", pid.0))
+            .map_err(|e| LockFileError::Io { pid, err: e })
     }
 }
