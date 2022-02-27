@@ -56,6 +56,7 @@ impl PidLock {
     /// Create new lock file. File will be created if:
     /// * pid file does not exists
     /// * pid file exists but process is dead
+    /// * old pid and current pid have different names (lock file exists after reboot and PID was taken by other process)
     pub fn acquire(&mut self) -> Result<(), crate::error::AmdGpuError> {
         log::debug!("PID LOCK acquiring {}", self.pid_path);
         let pid = self.process_pid();
@@ -99,7 +100,6 @@ impl PidLock {
     }
 
     /// Remove lock file
-    /// Remove lock file
     pub fn release(&mut self) -> Result<(), crate::error::AmdGpuError> {
         if let Err(e) = std::fs::remove_file(&self.pid_path) {
             log::error!("Failed to release pid file {}. {:?}", self.pid_path, e);
@@ -107,6 +107,7 @@ impl PidLock {
         Ok(())
     }
 
+    /// Read old pid value from file
     fn old_pid(&self) -> Option<Result<Pid, LockFileError>> {
         match std::fs::read_to_string(&self.pid_path) {
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
@@ -121,6 +122,7 @@ impl PidLock {
         }
     }
 
+    /// Check if PID is alive
     fn is_alive(&self, pid: Pid) -> bool {
         unsafe {
             let result = libc::kill(pid.0, 0);
@@ -128,10 +130,12 @@ impl PidLock {
         }
     }
 
+    /// Get current process PID
     fn process_pid(&self) -> Pid {
         Pid(std::process::id() as i32)
     }
 
+    /// Read target process name
     fn process_name(&self, pid: Pid) -> Result<String, LockFileError> {
         match std::fs::read_to_string(format!("/proc/{}/cmdline", *pid)) {
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
@@ -142,6 +146,7 @@ impl PidLock {
         }
     }
 
+    /// Override pid lock file
     fn enforce_pid_file(&self, pid: Pid) -> Result<(), LockFileError> {
         std::fs::write(&self.pid_path, format!("{}", pid.0))
             .map_err(|e| LockFileError::Io { pid, err: e })
