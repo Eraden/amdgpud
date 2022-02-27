@@ -55,18 +55,8 @@ fn run(config: Config) -> Result<()> {
     }
 
     match opts.command {
-        None => service::run(config),
-        Some(FanCommand::Service(_)) => {
-            let mut pid_file = PidLock::new(
-                "amdfand",
-                opts.pid_file
-                    .unwrap_or_else(|| String::from(DEFAULT_PID_FILE_NAME)),
-            )?;
-            pid_file.acquire()?;
-            let res = service::run(config);
-            pid_file.release()?;
-            res
-        }
+        None => run_service(config, opts),
+        Some(FanCommand::Service(_)) => run_service(config, opts),
         Some(FanCommand::SetAutomatic(switcher)) => {
             change_mode::run(switcher, FanMode::Automatic, config)
         }
@@ -85,6 +75,18 @@ fn run(config: Config) -> Result<()> {
             Ok(())
         }
     }
+}
+
+fn run_service(config: Config, opts: Opts) -> Result<()> {
+    let mut pid_file = PidLock::new(
+        "amdfand",
+        opts.pid_file
+            .unwrap_or_else(|| String::from(DEFAULT_PID_FILE_NAME)),
+    )?;
+    pid_file.acquire()?;
+    let res = service::run(config);
+    pid_file.release()?;
+    res
 }
 
 fn setup() -> Result<(String, Config)> {

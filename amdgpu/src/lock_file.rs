@@ -49,6 +49,7 @@ impl PidLock {
                 .map(String::from)
                 .unwrap()
         };
+        log::debug!("Creating pid lock for path {:?}", pid_path);
         Ok(Self { pid_path, name })
     }
 
@@ -56,26 +57,42 @@ impl PidLock {
     /// * pid file does not exists
     /// * pid file exists but process is dead
     pub fn acquire(&mut self) -> Result<(), crate::error::AmdGpuError> {
+        log::debug!("PID LOCK acquiring {}", self.pid_path);
         let pid = self.process_pid();
         if let Some(old) = self.old_pid() {
             let old = old?;
             if !self.is_alive(old) {
+                log::debug!("Old pid {:?} is dead, overriding...", old.0);
+
                 self.enforce_pid_file(pid)?;
                 return Ok(());
             }
             match self.process_name(old) {
                 Err(LockFileError::NotExists(..)) => {
+                    log::debug!(
+                        "Old pid {:?} doesn't have process stat, overriding....",
+                        old.0
+                    );
                     self.enforce_pid_file(old)?;
                 }
-                Err(e) => return Err(e.into()),
-                Ok(name) if name == self.name => {
-                    return Err(LockFileError::Conflict { pid: old, name }.into())
+                Err(e) => {
+                    log::debug!("Lock error {:?}", e);
+                    return Err(e.into());
                 }
-                Ok(_ /*name isn't the same*/) => {
+                Ok(name) if name.ends_with(&format!("/{}", self.name)) => {
+                    log::warn!("Conflicting {} and {} for process {}", old.0, pid.0, name);
+                    return Err(LockFileError::Conflict { pid: old, name }.into());
+                }
+                Ok(name /*name isn't the same*/) => {
+                    log::debug!(
+                        "Old process {:?} and current process {:?} have different names, overriding....",
+                        name, self.name
+                    );
                     self.enforce_pid_file(old)?;
                 }
             }
         } else {
+            log::debug!("No collision detected");
             self.enforce_pid_file(pid)?;
         }
         Ok(())
@@ -116,12 +133,12 @@ impl PidLock {
     }
 
     fn process_name(&self, pid: Pid) -> Result<String, LockFileError> {
-        match std::fs::read_to_string(format!("/proc/{}/cmdline", pid.to_string())) {
+        match std::fs::read_to_string(format!("/proc/{}/cmdline", *pid)) {
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
                 Err(LockFileError::NotExists(pid))
             }
             Err(err) => Err(LockFileError::Io { err, pid }),
-            Ok(s) => Ok(s),
+            Ok(s) => Ok(String::from(s.split('\0').next().unwrap_or_default())),
         }
     }
 
