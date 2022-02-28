@@ -17,16 +17,10 @@ impl ConfigFile {
 impl Widget for ConfigFile {
     fn ui(self, ui: &mut Ui) -> Response {
         ui.vertical(|ui| {
-            let mut matrix = {
-                #[allow(clippy::unnecessary_to_owned)]
-                self.config
-                    .lock()
-                    .speed_matrix()
-                    .to_vec()
-                    .into_iter()
-                    .enumerate()
-                    .peekable()
-            };
+            let mut matrix = { self.config.lock().speed_matrix().to_vec() }
+                .into_iter()
+                .enumerate()
+                .peekable();
 
             let mut prev = None;
 

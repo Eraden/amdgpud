@@ -79,23 +79,27 @@ where
         }
     }
 
+    #[must_use]
     pub fn x_axis_name(mut self, name: String) -> Self {
         self.axis_names[0] = name;
         self
     }
 
+    #[must_use]
     pub fn y_axis_name(mut self, name: String) -> Self {
         self.axis_names[1] = name;
         self
     }
 
     /// Show a legend including all named items.
+    #[must_use]
     pub fn legend(mut self, legend: Legend) -> Self {
         self.legend_config = Some(legend);
         self
     }
 
     /// Add a data lines.
+    #[must_use]
     pub fn line(mut self, mut line: Line) -> Self {
         if line.series.is_empty() {
             return self;
@@ -109,11 +113,13 @@ where
         self
     }
 
+    #[must_use]
     pub fn selected(mut self, selected: Option<usize>) -> Self {
         self.selected = selected;
         self
     }
 
+    #[must_use]
     fn auto_color(&mut self) -> Color32 {
         let i = self.next_auto_color_idx;
         self.next_auto_color_idx += 1;
@@ -126,6 +132,7 @@ where
     /// For instance, it can be useful to set this to `1.0` for when the two axes show the same
     /// unit.
     /// By default the plot window's aspect ratio is used.
+    #[must_use]
     pub fn data_aspect(mut self, data_aspect: f32) -> Self {
         self.data_aspect = Some(data_aspect);
         self
@@ -133,6 +140,7 @@ where
 
     /// width / height ratio of the plot region.
     /// By default no fixed aspect ratio is set (and width/height will fill the ui it is in).
+    #[must_use]
     pub fn view_aspect(mut self, view_aspect: f32) -> Self {
         self.view_aspect = Some(view_aspect);
         self
@@ -140,6 +148,7 @@ where
 
     /// Width of plot. By default a plot will fill the ui it is in.
     /// If you set [`Self::view_aspect`], the width can be calculated from the height.
+    #[must_use]
     pub fn width(mut self, width: f32) -> Self {
         self.min_size.x = width;
         self.width = Some(width);
@@ -148,6 +157,7 @@ where
 
     /// Height of plot. By default a plot will fill the ui it is in.
     /// If you set [`Self::view_aspect`], the height can be calculated from the width.
+    #[must_use]
     pub fn height(mut self, height: f32) -> Self {
         self.min_size.y = height;
         self.height = Some(height);
@@ -155,16 +165,19 @@ where
     }
 
     /// Minimum size of the plot view.
+    #[must_use]
     pub fn min_size(mut self, min_size: Vec2) -> Self {
         self.min_size = min_size;
         self
     }
 
+    #[must_use]
     pub fn allow_drag(mut self, allow_drag: bool) -> Self {
         self.allow_drag = allow_drag;
         self
     }
 
+    #[must_use]
     pub fn allow_zoom(mut self, allow_zoom: bool) -> Self {
         self.allow_zoom = allow_zoom;
         self
@@ -173,6 +186,7 @@ where
     /// Add a horizontal line.
     /// Can be useful e.g. to show min/max bounds or similar.
     /// Always fills the full width of the plot.
+    #[must_use]
     pub fn hline(mut self, mut hline: HLine) -> Self {
         if hline.stroke.color == Color32::TRANSPARENT {
             hline.stroke.color = self.auto_color();
@@ -184,6 +198,7 @@ where
     /// Add a vertical line.
     /// Can be useful e.g. to show min/max bounds or similar.
     /// Always fills the full height of the plot.
+    #[must_use]
     pub fn vline(mut self, mut vline: VLine) -> Self {
         if vline.stroke.color == Color32::TRANSPARENT {
             vline.stroke.color = self.auto_color();
@@ -192,6 +207,7 @@ where
         self
     }
 
+    #[must_use]
     pub fn on_event(mut self, f: OnEvent) -> Self {
         self.on_event = Some(f);
         self

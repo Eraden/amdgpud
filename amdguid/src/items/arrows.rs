@@ -24,30 +24,6 @@ impl Arrows {
             highlight: false,
         }
     }
-
-    /// Highlight these arrows in the plot.
-    pub fn highlight(mut self) -> Self {
-        self.highlight = true;
-        self
-    }
-
-    /// Set the arrows' color.
-    pub fn color(mut self, color: impl Into<Color32>) -> Self {
-        self.color = color.into();
-        self
-    }
-
-    /// Name of this set of arrows.
-    ///
-    /// This name will show up in the plot legend, if legends are turned on.
-    ///
-    /// Multiple plot items may share the same name, in which case they will also share an entry in
-    /// the legend.
-    #[allow(clippy::needless_pass_by_value)]
-    pub fn name(mut self, name: impl ToString) -> Self {
-        self.name = name.to_string();
-        self
-    }
 }
 
 impl PlotItem for Arrows {

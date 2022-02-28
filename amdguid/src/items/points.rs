@@ -37,36 +37,42 @@ impl Points {
     }
 
     /// Set the shape of the markers.
+    #[must_use]
     pub fn shape(mut self, shape: MarkerShape) -> Self {
         self.shape = shape;
         self
     }
 
     /// Highlight these points in the plot by scaling up their markers.
+    #[must_use]
     pub fn highlight(mut self) -> Self {
         self.highlight = true;
         self
     }
 
     /// Set the marker's color.
+    #[must_use]
     pub fn color(mut self, color: impl Into<Color32>) -> Self {
         self.color = color.into();
         self
     }
 
     /// Whether to fill the marker.
+    #[must_use]
     pub fn filled(mut self, filled: bool) -> Self {
         self.filled = filled;
         self
     }
 
     /// Whether to add stems between the markers and a horizontal reference line.
+    #[must_use]
     pub fn stems(mut self, y_reference: impl Into<f32>) -> Self {
         self.stems = Some(y_reference.into());
         self
     }
 
     /// Set the maximum extent of the marker around its position.
+    #[must_use]
     pub fn radius(mut self, radius: impl Into<f32>) -> Self {
         self.radius = radius.into();
         self
@@ -79,6 +85,7 @@ impl Points {
     /// Multiple plot items may share the same name, in which case they will also share an entry in
     /// the legend.
     #[allow(clippy::needless_pass_by_value)]
+    #[must_use]
     pub fn name(mut self, name: impl ToString) -> Self {
         self.name = name.to_string();
         self

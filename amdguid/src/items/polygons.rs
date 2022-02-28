@@ -30,36 +30,42 @@ impl Polygon {
 
     /// Highlight this polygon in the plot by scaling up the stroke and reducing the fill
     /// transparency.
+    #[must_use]
     pub fn highlight(mut self) -> Self {
         self.highlight = true;
         self
     }
 
     /// Add a custom stroke.
+    #[must_use]
     pub fn stroke(mut self, stroke: impl Into<Stroke>) -> Self {
         self.stroke = stroke.into();
         self
     }
 
     /// Set the stroke width.
+    #[must_use]
     pub fn width(mut self, width: impl Into<f32>) -> Self {
         self.stroke.width = width.into();
         self
     }
 
     /// Stroke color. Default is `Color32::TRANSPARENT` which means a color will be auto-assigned.
+    #[must_use]
     pub fn color(mut self, color: impl Into<Color32>) -> Self {
         self.stroke.color = color.into();
         self
     }
 
     /// Alpha of the filled area.
+    #[must_use]
     pub fn fill_alpha(mut self, alpha: impl Into<f32>) -> Self {
         self.fill_alpha = alpha.into();
         self
     }
 
     /// Set the outline's style. Default is `LineStyle::Solid`.
+    #[must_use]
     pub fn style(mut self, style: LineStyle) -> Self {
         self.style = style;
         self
@@ -72,6 +78,7 @@ impl Polygon {
     /// Multiple plot items may share the same name, in which case they will also share an entry in
     /// the legend.
     #[allow(clippy::needless_pass_by_value)]
+    #[must_use]
     pub fn name(mut self, name: impl ToString) -> Self {
         self.name = name.to_string();
         self

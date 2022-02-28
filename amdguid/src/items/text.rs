@@ -32,24 +32,28 @@ impl Text {
     }
 
     /// Highlight this text in the plot by drawing a rectangle around it.
+    #[must_use]
     pub fn highlight(mut self) -> Self {
         self.highlight = true;
         self
     }
 
     /// Text style. Default is `TextStyle::Small`.
+    #[must_use]
     pub fn style(mut self, style: TextStyle) -> Self {
         self.style = style;
         self
     }
 
     /// Text color. Default is `Color32::TRANSPARENT` which means a color will be auto-assigned.
+    #[must_use]
     pub fn color(mut self, color: impl Into<Color32>) -> Self {
         self.color = color.into();
         self
     }
 
     /// Anchor position of the text. Default is `Align2::CENTER_CENTER`.
+    #[must_use]
     pub fn anchor(mut self, anchor: Align2) -> Self {
         self.anchor = anchor;
         self
@@ -62,6 +66,7 @@ impl Text {
     /// Multiple plot items may share the same name, in which case they will also share an entry in
     /// the legend.
     #[allow(clippy::needless_pass_by_value)]
+    #[must_use]
     pub fn name(mut self, name: impl ToString) -> Self {
         self.name = name.to_string();
         self
