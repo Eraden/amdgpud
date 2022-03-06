@@ -1,5 +1,6 @@
 #[cfg(feature = "gui-helper")]
 use crate::helper_cmd::GuiHelperError;
+use crate::lock_file::LockFileError;
 use pidlock::PidlockError;
 use std::fmt::{Debug, Display, Formatter};
 
@@ -46,6 +47,8 @@ pub enum AmdGpuError {
     #[cfg(feature = "gui-helper")]
     #[error("{0:?}")]
     GuiHelper(#[from] GuiHelperError),
+    #[error("{0:?}")]
+    LockFile(#[from] LockFileError),
 }
 
 #[derive(Debug, thiserror::Error)]

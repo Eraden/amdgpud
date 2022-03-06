@@ -62,11 +62,10 @@ pub fn read_cards() -> std::io::Result<Vec<Card>> {
 pub fn hw_mons(filter: bool) -> std::io::Result<Vec<HwMon>> {
     Ok(read_cards()?
         .into_iter()
-        .map(|card| {
+        .flat_map(|card| {
             log::info!("opening hw mon for {:?}", card);
             hw_mon::open_hw_mon(card)
         })
-        .flatten()
         .filter(|hw_mon| {
             !filter || {
                 log::info!("is vendor ok? {}", hw_mon.is_amd());

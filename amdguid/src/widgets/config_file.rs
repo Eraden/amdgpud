@@ -17,11 +17,7 @@ impl ConfigFile {
 impl Widget for ConfigFile {
     fn ui(self, ui: &mut Ui) -> Response {
         ui.vertical(|ui| {
-            let mut matrix = self
-                .config
-                .lock()
-                .speed_matrix()
-                .to_vec()
+            let mut matrix = { self.config.lock().speed_matrix().to_vec() }
                 .into_iter()
                 .enumerate()
                 .peekable();

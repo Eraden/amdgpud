@@ -34,24 +34,28 @@ impl PlotImage {
     }
 
     /// Highlight this image in the plot.
+    #[must_use]
     pub fn highlight(mut self) -> Self {
         self.highlight = true;
         self
     }
 
     /// Select UV range. Default is (0,0) in top-left, (1,1) bottom right.
+    #[must_use]
     pub fn uv(mut self, uv: impl Into<Rect>) -> Self {
         self.uv = uv.into();
         self
     }
 
     /// A solid color to put behind the image. Useful for transparent images.
+    #[must_use]
     pub fn bg_fill(mut self, bg_fill: impl Into<Color32>) -> Self {
         self.bg_fill = bg_fill.into();
         self
     }
 
     /// Multiply image color with this. Default is WHITE (no tint).
+    #[must_use]
     pub fn tint(mut self, tint: impl Into<Color32>) -> Self {
         self.tint = tint.into();
         self
@@ -64,6 +68,7 @@ impl PlotImage {
     /// Multiple plot items may share the same name, in which case they will also share an entry in
     /// the legend.
     #[allow(clippy::needless_pass_by_value)]
+    #[must_use]
     pub fn name(mut self, name: impl ToString) -> Self {
         self.name = name.to_string();
         self
