@@ -31,6 +31,7 @@ pub static PULSE_WIDTH_MODULATION: &str = "pwm1";
 pub static PULSE_WIDTH_MODULATION_MODE: &str = "pwm1_enable";
 
 // static PULSE_WIDTH_MODULATION_DISABLED: &str = "0";
+pub static PULSE_WIDTH_MODULATION_MANUAL: &str = "1";
 pub static PULSE_WIDTH_MODULATION_AUTO: &str = "2";
 
 static mut RELOAD_CONFIG: bool = false;

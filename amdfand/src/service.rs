@@ -16,6 +16,16 @@ pub fn run(mut config: Config) -> crate::Result<()> {
     if hw_mons.is_empty() {
         return Err(AmdFanError::NoHwMonFound);
     }
+    hw_mons.iter().for_each(|fan| {
+        if let Err(e) = fan.write_manual() {
+            log::debug!(
+                "Failed to switch to manual fan manipulation for fan {:?}. {:?}",
+                fan.hw_mon,
+                e
+            );
+        }
+    });
+
     let mut cache = std::collections::HashMap::new();
     loop {
         if is_reload_required() {

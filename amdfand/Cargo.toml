@@ -1,6 +1,6 @@
 [package]
 name = "amdfand"
-version = "1.0.9"
+version = "1.0.11"
 edition = "2018"
 description = "AMDGPU fan control service"
 license = "MIT OR Apache-2.0"
@@ -21,8 +21,6 @@ gumdrop = { version = "0.8.0" }
 
 log = { version = "0.4.14" }
 pretty_env_logger = { version = "0.4.0" }
-
-pidlock = { version = "0.1.4" }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0" }

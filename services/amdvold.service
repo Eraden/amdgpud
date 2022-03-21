@@ -1,10 +1,14 @@
 [Unit]
 Description=AMD GPU voltage daemon
 After=sysinit.target local-fs.target
+
 [Service]
 Restart=on-failure
 RestartSec=4
+
 ExecStart=/usr/bin/amdvold service
+
 Environment=RUST_LOG=ERROR
+
 [Install]
 WantedBy=multi-user.target

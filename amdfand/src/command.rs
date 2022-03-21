@@ -3,7 +3,7 @@ use gumdrop::Options;
 use amdgpu::hw_mon::HwMon;
 use amdgpu::utils::{linear_map, load_temp_inputs};
 use amdgpu::{
-    utils, TempInput, PULSE_WIDTH_MODULATION_AUTO, PULSE_WIDTH_MODULATION_MAX,
+    utils, TempInput, PULSE_WIDTH_MODULATION_MANUAL, PULSE_WIDTH_MODULATION_MAX,
     PULSE_WIDTH_MODULATION_MIN, PULSE_WIDTH_MODULATION_MODE,
 };
 use amdgpu_config::fan::Config;
@@ -116,7 +116,7 @@ impl Fan {
 
     /// Change fan speed to given value with checking min-max range
     fn write_pwm(&self, value: u64) -> crate::Result<()> {
-        if self.is_fan_automatic() {
+        if !self.is_fan_manual() {
             self.write_manual()?;
         }
         self.hw_mon_write("pwm1", value)
@@ -125,9 +125,9 @@ impl Fan {
     }
 
     /// Check if gpu fan is managed by GPU embedded manager
-    pub fn is_fan_automatic(&self) -> bool {
+    pub fn is_fan_manual(&self) -> bool {
         self.hw_mon_read(PULSE_WIDTH_MODULATION_MODE)
-            .map(|s| s.as_str() == PULSE_WIDTH_MODULATION_AUTO)
+            .map(|s| s.as_str() == PULSE_WIDTH_MODULATION_MANUAL)
             .unwrap_or_default()
     }
 
@@ -166,10 +166,10 @@ impl Fan {
         if self.pwm_min.is_none() {
             self.pwm_min = Some(self.value_or(PULSE_WIDTH_MODULATION_MIN, 0));
         };
-        self.pwm_min.unwrap_or_default()
+        self.pwm_min.unwrap_or(0)
     }
 
-    /// Read minimal fan speed. Usually this is 255
+    /// Read maximal fan speed. Usually this is 255
     pub fn pwm_max(&mut self) -> u32 {
         if self.pwm_max.is_none() {
             self.pwm_max = Some(self.value_or(PULSE_WIDTH_MODULATION_MAX, 255));
