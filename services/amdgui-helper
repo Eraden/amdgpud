@@ -10,3 +10,7 @@ command_background=true
 depend() {
     need udev
 }
+
+stop_pre() {
+    rm /var/lib/amdgui/helper.pid /var/lib/amdfand/helper.sock
+}
