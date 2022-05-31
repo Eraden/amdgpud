@@ -6,7 +6,7 @@ After=sysinit.target local-fs.target
 Restart=on-failure
 RestartSec=4
 
-ExecStart=/usr/bin/amdmond log_file -s /var/log/amdmon.csv
+ExecStart=/usr/bin/amdmond log-file -s /var/log/amdmon.csv
 
 Environment=RUST_LOG=ERROR
 
