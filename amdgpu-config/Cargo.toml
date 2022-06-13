@@ -19,7 +19,7 @@ monitor = []
 gui = []
 
 [dependencies]
-amdgpu = { path = "../amdgpu", version = "1.0.9" }
+amdgpu = { path = "../amdgpu", version = "1.0.11" }
 
 serde = { version = "1.0.126", features = ["derive"] }
 toml = { version = "0.5.8" }

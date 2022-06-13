@@ -9,8 +9,8 @@ categories = ["hardware-support"]
 repository = "https://github.com/Eraden/amdgpud"
 
 [dependencies]
-amdgpu = { path = "../amdgpu", version = "1.0.9" }
-amdgpu-config = { path = "../amdgpu-config", version = "1.0.9", features = ["monitor", "fan"] }
+amdgpu = { path = "../amdgpu", version = "1.0.11" }
+amdgpu-config = { path = "../amdgpu-config", version = "1.0.10", features = ["monitor", "fan"] }
 
 serde = { version = "1.0.126", features = ["derive"] }
 toml = { version = "0.5.8" }
