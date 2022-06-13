@@ -1,6 +1,6 @@
 [package]
 name = "amdmond"
-version = "1.0.9"
+version = "1.0.10"
 edition = "2021"
 description = "AMD GPU monitoring tool for Linux"
 license = "MIT OR Apache-2.0"
@@ -9,9 +9,9 @@ categories = ["hardware-support"]
 repository = "https://github.com/Eraden/amdgpud"
 
 [dependencies]
-amdgpu = { path = "../amdgpu", version = "1.0.9" }
-amdgpu-config = { path = "../amdgpu-config", version = "1.0.9", features = ["monitor", "fan"] }
-amdmond-lib = { path = "../amdmond-lib", version = "1.0.9" }
+amdgpu = { path = "../amdgpu", version = "1.0.11" }
+amdgpu-config = { path = "../amdgpu-config", version = "1.0.10", features = ["monitor", "fan"] }
+amdmond-lib = { path = "../amdmond-lib", version = "1.0.10" }
 
 serde = { version = "1.0.126", features = ["derive"] }
 toml = { version = "0.5.8" }
