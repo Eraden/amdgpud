@@ -389,7 +389,10 @@ where
                     }
                 }
             }
-            if allow_drag && response.dragged_by(PointerButton::Primary) && response.hover_pos().is_some() {
+            if allow_drag
+                && response.dragged_by(PointerButton::Primary)
+                && response.hover_pos().is_some()
+            {
                 let mut delta = response.drag_delta();
                 delta.x *= transform.dvalue_dpos()[0] as f32;
                 delta.y *= transform.dvalue_dpos()[1] as f32;
