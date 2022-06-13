@@ -5,7 +5,7 @@ const ENGINE_CLOCK_LABEL: &str = "OD_SCLK:";
 const MEMORY_CLOCK_LABEL: &str = "OD_MCLK:";
 const CURVE_POINTS_LABEL: &str = "OD_VDDC_CURVE:";
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Frequency {
     pub value: u32,
     pub unit: String,
@@ -50,7 +50,7 @@ impl std::str::FromStr for Frequency {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Voltage {
     pub value: u32,
     pub unit: String,
@@ -95,13 +95,13 @@ impl std::str::FromStr for Voltage {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct CurvePoint {
     pub freq: Frequency,
     pub voltage: Voltage,
 }
 
-#[derive(Debug, thiserror::Error, PartialEq)]
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum ClockStateError {
     #[error("Can't parse value. {0:?}")]
     ParseValue(#[from] std::num::ParseIntError),
@@ -113,7 +113,7 @@ pub enum ClockStateError {
     InvalidEngineClockSection(String),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ClockState {
     pub curve_labels: Vec<CurvePoint>,
     pub engine_label_lowest: Option<Frequency>,

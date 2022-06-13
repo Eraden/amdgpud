@@ -369,16 +369,18 @@ where
             .iter_mut()
             .for_each(|line| line.initialize(transform.bounds().range_x()));
 
-        let bounds = *transform.bounds();
+        let t_bounds = *transform.bounds();
+
         let prepared = DragPlotPrepared {
             items,
             lines,
             show_x: true,
             show_y: true,
             show_axes: [true, true],
-            transform,
+            transform: transform.clone(),
             axis_names,
         };
+
         if let Some(mut f) = on_event {
             if let Some(pointer) = response.hover_pos() {
                 if response.mouse_down(PointerButton::Primary) {
@@ -387,8 +389,10 @@ where
                     }
                 }
             }
-            if allow_drag && response.dragged_by(PointerButton::Primary) {
-                let delta = response.drag_delta() * Vec2::new(0.18, -0.18);
+            if allow_drag && response.dragged_by(PointerButton::Primary) && response.hover_pos().is_some() {
+                let mut delta = response.drag_delta();
+                delta.x *= transform.dvalue_dpos()[0] as f32;
+                delta.y *= transform.dvalue_dpos()[1] as f32;
                 f(PlotMsg::Drag(delta));
             }
         }
@@ -404,7 +408,7 @@ where
         ui.memory().id_data.insert(
             plot_id,
             PlotMemory {
-                bounds,
+                bounds: t_bounds,
                 auto_bounds,
                 hovered_entry,
                 hidden_items,

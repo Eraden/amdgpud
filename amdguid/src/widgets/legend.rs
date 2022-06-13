@@ -4,7 +4,7 @@ use egui::{pos2, vec2, Align, PointerButton, Rect, Response, Sense, WidgetInfo, 
 use epaint::{Color32, TextStyle};
 
 /// Where to place the plot legend.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Corner {
     LeftTop,
     RightTop,

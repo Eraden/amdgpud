@@ -1,6 +1,6 @@
 [package]
 name = "amdgpu-config"
-version = "1.0.9"
+version = "1.0.10"
 edition = "2021"
 description = "Subcomponent of AMDGPU tools"
 license = "MIT OR Apache-2.0"

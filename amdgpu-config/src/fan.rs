@@ -246,7 +246,7 @@ mod parse_config {
 
     use amdgpu::{AmdGpuError, Card, TempInput};
 
-    #[derive(Deserialize, PartialEq, Debug)]
+    #[derive(Deserialize, PartialEq, Eq, Debug)]
     pub struct Foo {
         card: Card,
     }

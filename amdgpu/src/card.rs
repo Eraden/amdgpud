@@ -2,7 +2,7 @@ use serde::Deserialize;
 
 use crate::AmdGpuError;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Card(pub u32);
 
 impl std::fmt::Display for Card {

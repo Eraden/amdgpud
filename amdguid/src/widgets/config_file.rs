@@ -42,20 +42,9 @@ impl Widget for ConfigFile {
                 };
 
                 {
-                    ui.label("Temperature");
-                    if ui
-                        .add(egui::Slider::new(&mut current.temp, min.temp..=max.temp))
-                        .changed()
-                    {
-                        if let Some(entry) = self.config.lock().speed_matrix_mut().get_mut(idx) {
-                            entry.temp = current.temp;
-                        }
-                    }
-                }
-                {
                     ui.label("Speed");
                     if ui
-                        .add(egui::Slider::new(&mut current.speed, min.speed..=max.speed))
+                        .add(egui::Slider::new(&mut current.temp, min.temp..=max.temp))
                         .changed()
                     {
                         if let Some(entry) = self.config.lock().speed_matrix_mut().get_mut(idx) {
@@ -63,18 +52,29 @@ impl Widget for ConfigFile {
                         }
                     }
                 }
+                {
+                    ui.label("Temperature");
+                    if ui
+                        .add(egui::Slider::new(&mut current.speed, min.speed..=max.speed))
+                        .changed()
+                    {
+                        if let Some(entry) = self.config.lock().speed_matrix_mut().get_mut(idx) {
+                            entry.temp = current.temp;
+                        }
+                    }
+                }
 
                 ui.horizontal(|ui| {
                     if next.is_some() {
                         if ui
-                            .add(egui::Button::new("Add in middle"))
+                            .add(egui::Button::new("Add in the middle"))
                             .clicked_by(PointerButton::Primary)
                         {
                             self.config.lock().speed_matrix_vec_mut().insert(
                                 idx + 1,
                                 MatrixPoint::new(
-                                    min.temp + ((max.temp - min.temp) / 2.0),
                                     min.speed + ((max.speed - min.speed) / 2.0),
+                                    min.temp + ((max.temp - min.temp) / 2.0),
                                 ),
                             )
                         }

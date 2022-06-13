@@ -1,7 +1,7 @@
 use crate::AmdGpuError;
 use serde::Serializer;
 
-#[derive(PartialEq, Debug, Copy, Clone)]
+#[derive(PartialEq, Eq, Debug, Copy, Clone)]
 pub struct TempInput(pub u16);
 
 impl TempInput {

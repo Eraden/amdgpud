@@ -50,7 +50,7 @@ impl ChangeFanSettings {
                                 let iter = config
                                     .speed_matrix()
                                     .iter()
-                                    .map(|v| crate::items::Value::new(v.speed, v.temp));
+                                    .map(|v| crate::items::Value::new(v.temp, v.speed));
                                 crate::items::Line::new(crate::items::Values::from_values_iter(
                                     iter,
                                 ))
@@ -63,8 +63,8 @@ impl ChangeFanSettings {
                                 .allow_drag(true)
                                 .allow_zoom(false)
                                 .line(curve)
-                                .y_axis_name(String::from("Temperature"))
-                                .x_axis_name(String::from("Speed"))
+                                .y_axis_name(String::from("Speed"))
+                                .x_axis_name(String::from("Temperature"))
                                 .hline(crate::items::HLine::new(100.0).color(Color32::TRANSPARENT))
                                 .vline(crate::items::VLine::new(100.0).color(Color32::TRANSPARENT))
                                 .on_event(|msg| match msg {
@@ -85,17 +85,17 @@ impl ChangeFanSettings {
                                             let current = config.speed_matrix_mut().get_mut(idx);
 
                                             if let Some(point) = current {
-                                                point.speed = (point.speed + delta.x as f64)
+                                                point.speed = (point.speed + delta.y as f64)
                                                     .max(min.speed)
                                                     .min(max.speed);
-                                                point.temp = (point.temp + delta.y as f64)
+                                                point.temp = (point.temp + delta.x as f64)
                                                     .max(min.temp)
                                                     .min(max.temp);
                                             }
                                         }
                                     }
                                 })
-                                .legend(crate::widgets::legend::Legend::default())
+                                .legend(widgets::legend::Legend::default())
                         });
                         ui.separator();
                         Self::save_button(self.config.clone(), state, ui);
