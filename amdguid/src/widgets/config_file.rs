@@ -28,7 +28,7 @@ impl<'l> Widget for ConfigFile<'l> {
                 let min: MatrixPoint = if current == &MatrixPoint::MIN {
                     MatrixPoint::MIN
                 } else if let Some(prev) = &prev {
-                    prev.clone()
+                    *prev
                 } else {
                     MatrixPoint::MIN
                 };
@@ -98,7 +98,7 @@ impl<'l> Widget for ConfigFile<'l> {
                 });
 
                 ui.separator();
-                prev = Some(current.clone());
+                prev = Some(*current);
             }
 
             ui.allocate_response(ui.available_size(), Sense::click())
