@@ -80,14 +80,14 @@ where
     }
 
     #[must_use]
-    pub fn x_axis_name(mut self, name: String) -> Self {
-        self.axis_names[0] = name;
+    pub fn x_axis_name<S: Into<String>>(mut self, name: S) -> Self {
+        self.axis_names[0] = name.into();
         self
     }
 
     #[must_use]
-    pub fn y_axis_name(mut self, name: String) -> Self {
-        self.axis_names[1] = name;
+    pub fn y_axis_name<S: Into<String>>(mut self, name: S) -> Self {
+        self.axis_names[1] = name.into();
         self
     }
 

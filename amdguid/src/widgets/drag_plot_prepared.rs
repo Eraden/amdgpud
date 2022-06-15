@@ -29,6 +29,7 @@ impl DragPlotPrepared {
 
         let mut plot_ui = ui.child_ui(*transform.frame(), Layout::default());
         plot_ui.set_clip_rect(*transform.frame());
+
         for item in &self.items {
             item.get_shapes(&mut plot_ui, transform, &mut shapes);
         }

@@ -4,39 +4,39 @@ use amdgpu_config::fan::MatrixPoint;
 
 use crate::app::FanConfig;
 
-pub struct ConfigFile {
+pub struct ConfigFile<'l> {
     config: FanConfig,
+    matrix: &'l mut [MatrixPoint],
 }
 
-impl ConfigFile {
-    pub fn new(config: FanConfig) -> Self {
-        Self { config }
+impl<'l> ConfigFile<'l> {
+    pub fn new(config: FanConfig, matrix: &'l mut [MatrixPoint]) -> Self {
+        Self { config, matrix }
     }
 }
 
-impl Widget for ConfigFile {
+impl<'l> Widget for ConfigFile<'l> {
     fn ui(self, ui: &mut Ui) -> Response {
+        let config = self.config.clone();
+
         ui.vertical(|ui| {
-            let mut matrix = { self.config.lock().speed_matrix().to_vec() }
-                .into_iter()
-                .enumerate()
-                .peekable();
+            let mut matrix = self.matrix.iter_mut().enumerate().peekable();
 
-            let mut prev = None;
+            let mut prev: Option<MatrixPoint> = None;
 
-            while let Some((idx, mut current)) = matrix.next() {
-                let min = if current == MatrixPoint::MIN {
+            while let Some((idx, current)) = matrix.next() {
+                let min: MatrixPoint = if current == &MatrixPoint::MIN {
                     MatrixPoint::MIN
-                } else if let Some(prev) = prev {
-                    prev
+                } else if let Some(prev) = &prev {
+                    prev.clone()
                 } else {
                     MatrixPoint::MIN
                 };
                 let next = matrix.peek();
-                let max = if current == MatrixPoint::MAX {
+                let max: MatrixPoint = if current == &MatrixPoint::MAX {
                     MatrixPoint::MAX
                 } else if let Some(next) = next.map(|(_, n)| n) {
-                    *next
+                    MatrixPoint::new(next.temp, next.speed)
                 } else {
                     MatrixPoint::MAX
                 };
@@ -44,10 +44,10 @@ impl Widget for ConfigFile {
                 {
                     ui.label("Speed");
                     if ui
-                        .add(egui::Slider::new(&mut current.temp, min.temp..=max.temp))
+                        .add(egui::Slider::new(&mut current.speed, min.speed..=max.speed))
                         .changed()
                     {
-                        if let Some(entry) = self.config.lock().speed_matrix_mut().get_mut(idx) {
+                        if let Some(entry) = config.lock().speed_matrix_mut().get_mut(idx) {
                             entry.speed = current.speed;
                         }
                     }
@@ -55,10 +55,10 @@ impl Widget for ConfigFile {
                 {
                     ui.label("Temperature");
                     if ui
-                        .add(egui::Slider::new(&mut current.speed, min.speed..=max.speed))
+                        .add(egui::Slider::new(&mut current.temp, min.temp..=max.temp))
                         .changed()
                     {
-                        if let Some(entry) = self.config.lock().speed_matrix_mut().get_mut(idx) {
+                        if let Some(entry) = config.lock().speed_matrix_mut().get_mut(idx) {
                             entry.temp = current.temp;
                         }
                     }
@@ -70,7 +70,7 @@ impl Widget for ConfigFile {
                             .add(egui::Button::new("Add in the middle"))
                             .clicked_by(PointerButton::Primary)
                         {
-                            self.config.lock().speed_matrix_vec_mut().insert(
+                            config.lock().speed_matrix_vec_mut().insert(
                                 idx + 1,
                                 MatrixPoint::new(
                                     min.speed + ((max.speed - min.speed) / 2.0),
@@ -79,12 +79,12 @@ impl Widget for ConfigFile {
                             )
                         }
                     } else if next.is_none()
-                        && current != MatrixPoint::MAX
+                        && *current != MatrixPoint::MAX
                         && ui
                             .add(egui::Button::new("Add"))
                             .clicked_by(PointerButton::Primary)
                     {
-                        self.config
+                        config
                             .lock()
                             .speed_matrix_vec_mut()
                             .push(MatrixPoint::new(100.0, 100.0))
@@ -93,12 +93,12 @@ impl Widget for ConfigFile {
                         .add(egui::Button::new("Remove"))
                         .clicked_by(PointerButton::Primary)
                     {
-                        self.config.lock().speed_matrix_vec_mut().remove(idx);
+                        config.lock().speed_matrix_vec_mut().remove(idx);
                     }
                 });
 
                 ui.separator();
-                prev = Some(current);
+                prev = Some(current.clone());
             }
 
             ui.allocate_response(ui.available_size(), Sense::click())

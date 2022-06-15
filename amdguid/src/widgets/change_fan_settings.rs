@@ -11,11 +11,15 @@ use crate::{widgets, widgets::ConfigFile};
 pub struct ChangeFanSettings {
     config: FanConfig,
     selected: Option<usize>,
+    matrix: Vec<MatrixPoint>,
 }
 
 impl ChangeFanSettings {
     pub fn new(config: FanConfig) -> Self {
+        let matrix = config.lock().speed_matrix().to_vec();
+
         Self {
+            matrix,
             config,
             selected: None,
         }
@@ -63,10 +67,12 @@ impl ChangeFanSettings {
                                 .allow_drag(true)
                                 .allow_zoom(false)
                                 .line(curve)
-                                .y_axis_name(String::from("Speed"))
-                                .x_axis_name(String::from("Temperature"))
-                                .hline(crate::items::HLine::new(100.0).color(Color32::TRANSPARENT))
-                                .vline(crate::items::VLine::new(100.0).color(Color32::TRANSPARENT))
+                                .y_axis_name("Speed")
+                                .x_axis_name("Temperature")
+                                .hline(crate::items::HLine::new(0.0).color(Color32::BLACK))
+                                .hline(crate::items::HLine::new(100.0).color(Color32::BLACK))
+                                .vline(crate::items::VLine::new(0.0).color(Color32::BLACK))
+                                .vline(crate::items::VLine::new(100.0).color(Color32::BLACK))
                                 .on_event(|msg| match msg {
                                     PlotMsg::Clicked(idx) => {
                                         self.selected = Some(idx);
@@ -83,6 +89,12 @@ impl ChangeFanSettings {
                                                 .and_then(|i| config.speed_matrix().get(i).copied())
                                                 .unwrap_or(MatrixPoint::MAX);
                                             let current = config.speed_matrix_mut().get_mut(idx);
+                                            if let Some((cache, current)) =
+                                                self.matrix.get_mut(idx).zip(current.as_deref())
+                                            {
+                                                cache.speed = current.speed;
+                                                cache.temp = current.temp;
+                                            }
 
                                             if let Some(point) = current {
                                                 point.speed = (point.speed + delta.y as f64)
@@ -111,7 +123,7 @@ impl ChangeFanSettings {
                 Layout::left_to_right(),
             )
             .vertical(|ui| {
-                ui.add(ConfigFile::new(self.config.clone()));
+                ui.add(ConfigFile::new(self.config.clone(), &mut self.matrix));
             });
         });
     }

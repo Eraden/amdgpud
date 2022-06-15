@@ -72,7 +72,10 @@ impl Default for Page {
 
 pub type FanConfig = Arc<Mutex<amdgpu_config::fan::Config>>;
 
+#[cfg(not(debug_assertions))]
 static RELOAD_PID_LIST_DELAY: u8 = 18;
+#[cfg(debug_assertions)]
+static RELOAD_PID_LIST_DELAY: u8 = 80;
 
 pub struct StatefulConfig {
     pub config: FanConfig,

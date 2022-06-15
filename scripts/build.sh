@@ -1,6 +1,13 @@
+#!/usr/bin/env zsh
+
 set -e +x
 
-cd "$(git rev-parse --show-toplevel)"
+ROOT="$(git rev-parse --show-toplevel)"
+
+cd ${ROOT}
+
+rm -Rf ${ROOT}/tmp
+mkdir ${ROOT}/tmp
 
 ./scripts/compile.sh
 
@@ -12,17 +19,20 @@ strip target/x86_64-unknown-linux-musl/release/amdmond
 #upx --best --lzma target/x86_64-unknown-linux-musl/release/amdvold
 #upx --best --lzma target/x86_64-unknown-linux-musl/release/amdmond
 
-cargo build --release --target x86_64-unknown-linux-gnu --bin amdguid --no-default-features --features xorg-glium
-strip target/x86_64-unknown-linux-gnu/release/amdguid
-#upx --best --lzma target/x86_64-unknown-linux-gnu/release/amdguid
-zip ./target/amdguid-glium.zip ./target/x86_64-unknown-linux-gnu/release/amdguid
+function build_and_zip() {
+  feature=$1
+  zip_name=$2
 
-cargo build --release --target x86_64-unknown-linux-gnu --bin amdguid --no-default-features --features xorg-glow
-strip target/x86_64-unknown-linux-gnu/release/amdguid
-#upx --best --lzma target/x86_64-unknown-linux-gnu/release/amdguid
-zip ./target/amdguid-glow.zip ./target/x86_64-unknown-linux-gnu/release/amdguid
+  cd ${ROOT}
+  cargo build --release --target x86_64-unknown-linux-gnu --bin amdguid --no-default-features --features ${feature}
+  strip target/x86_64-unknown-linux-gnu/release/amdguid
+  #upx --best --lzma target/x86_64-unknown-linux-gnu/release/amdguid
+  cp ./target/x86_64-unknown-linux-gnu/release/amdguid ./tmp
+  cd ${ROOT}/tmp
+  zip ${zip_name}.zip ./amdguid
+  cd ${ROOT}
+}
 
-cargo build --release --target x86_64-unknown-linux-gnu --bin amdguid --no-default-features --features wayland
-strip target/x86_64-unknown-linux-gnu/release/amdguid
-#upx --best --lzma target/x86_64-unknown-linux-gnu/release/amdguid
-zip ./target/amdguid-wayland.zip ./target/x86_64-unknown-linux-gnu/release/amdguid
+build_and_zip xorg-glium amdguid-glium
+build_and_zip xorg-glow amdguid-glow
+build_and_zip wayland amdguid-wayland
