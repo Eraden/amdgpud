@@ -51,7 +51,10 @@ for f in $(ls *.tar.gz); do
 done
 
 cd ${ROOT}/tmp
-for file in $(ls *.tar.gz);
-do
-  mv $file ${ROOT}/${1}-$file
-done
+
+zip -R ${1}.zip *.tar.gz
+
+#for file in $(ls *.tar.gz);
+#do
+#  mv $file ${ROOT}/${1}-$file
+#done

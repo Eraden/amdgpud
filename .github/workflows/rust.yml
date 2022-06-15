@@ -90,11 +90,39 @@ jobs:
           OS: ${{ matrix.os }}
         run: ./scripts/zip-ci.sh $OS
 
-      - name: Upload a Build Artifact
+      - name: Upload archive with all
         uses: actions/upload-artifact@v2.2.4
         with:
-          # Artifact name
-          name: binaries-${{ matrix.os }}.zip
-          # A file, directory or wildcard pattern that describes what to upload
-          path: ./binaries-${{ matrix.os }}.zip
-          # The desired behavior if no files are found using the provided path.
+          name: ${{ matrix.os }}.tar.gz
+          path: ./tmp/${{ matrix.os }}.tar.gz
+      - name: Upload amdfand
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: ${{ matrix.os }}-amdfand.tar.gz
+          path: ./tmp/amdfand.tar.gz
+      - name: Upload amdguid-glium
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: ${{ matrix.os }}-amdguid-glium.tar.gz
+          path: ./tmp/amdguid-glium.tar.gz
+      - name: Upload amdguid-glow
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: ${{ matrix.os }}-amdguid-glow.tar.gz
+          path: ./tmp/amdguid-glow.tar.gz
+      - name: Upload amdguid-wayland
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: ${{ matrix.os }}-amdguid-wayland.tar.gz
+          path: ./tmp/amdguid-wayland.tar.gz
+      - name: Upload amdmond
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: ${{ matrix.os }}-amdmond.tar.gz
+          path: ./tmp/amdmond.tar.gz
+      - name: Upload amdvold
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: ${{ matrix.os }}-amdvold.tar.gz
+          path: ./tmp/amdvold.tar.gz
+
