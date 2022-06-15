@@ -13,19 +13,19 @@ amdgpu = { path = "../amdgpu", version = "1.0.9", features = ["gui-helper"] }
 amdgpu-config = { path = "../amdgpu-config", version = "1.0.9", features = ["fan", "gui"] }
 amdmond-lib = { path = "../amdmond-lib", version = "1.0.9" }
 
-serde = { version = "1.0.126", features = ["derive"] }
-toml = { version = "0.5.8" }
-ron = { version = "0.7.0" }
+serde = { version = "1.0", features = ["derive"] }
+toml = { version = "0.5" }
+ron = { version = "0.7" }
 
-thiserror = { version = "1.0.30" }
-gumdrop = { version = "0.8.0" }
+thiserror = { version = "1.0" }
+gumdrop = { version = "0.8" }
 
-log = { version = "0.4.14" }
-pretty_env_logger = { version = "0.4.0" }
+log = { version = "0.4" }
+pretty_env_logger = { version = "0.4" }
 
-nix = { version = "0.23.1" }
+nix = { version = "0.23" }
 
-sudo = { version = "0.6.0" }
+sudo = { version = "0.6" }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0" }

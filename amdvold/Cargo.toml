@@ -9,16 +9,16 @@ categories = ["hardware-support"]
 repository = "https://github.com/Eraden/amdgpud"
 
 [dependencies]
-amdgpu = { path = "../amdgpu", version = "1.0.9" }
-amdgpu-config = { path = "../amdgpu-config", version = "1.0.9", features = ["voltage"] }
+amdgpu = { path = "../amdgpu", version = "1.0.11" }
+amdgpu-config = { path = "../amdgpu-config", version = "1.0.10", features = ["voltage"] }
 
-serde = { version = "1.0.126", features = ["derive"] }
-toml = { version = "0.5.8" }
-thiserror = { version = "1.0.30" }
-gumdrop = { version = "0.8.0" }
+serde = { version = "1.0", features = ["derive"] }
+toml = { version = "0.5" }
+thiserror = { version = "1.0" }
+gumdrop = { version = "0.8" }
 
-log = { version = "0.4.14" }
-pretty_env_logger = { version = "0.4.0" }
+log = { version = "0.4" }
+pretty_env_logger = { version = "0.4" }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0" }

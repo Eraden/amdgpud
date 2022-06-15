@@ -28,17 +28,17 @@ _gui = [
 ]
 
 [dependencies]
-amdgpu = { path = "../amdgpu", version = "1.0.9", features = ["gui-helper"] }
-amdgpu-config = { path = "../amdgpu-config", version = "1.0.9", features = ["fan", "gui"] }
-amdmond-lib = { path = "../amdmond-lib", version = "1.0.9" }
+amdgpu = { path = "../amdgpu", version = "1.0.11", features = ["gui-helper"] }
+amdgpu-config = { path = "../amdgpu-config", version = "1.0.10", features = ["fan", "gui"] }
+amdmond-lib = { path = "../amdmond-lib", version = "1.0.10" }
 
-serde = { version = "1.0.126", features = ["derive"] }
-toml = { version = "0.5.8" }
-thiserror = { version = "1.0.30" }
-gumdrop = { version = "0.8.0" }
+serde = { version = "1.0", features = ["derive"] }
+toml = { version = "0.5" }
+thiserror = { version = "1.0" }
+gumdrop = { version = "0.8" }
 
-log = { version = "0.4.14" }
-pretty_env_logger = { version = "0.4.0" }
+log = { version = "0.4" }
+pretty_env_logger = { version = "0.4" }
 
 egui = { version = "0.15", optional = true }
 epaint = { version = "0.15", features = ["serialize"], optional = true }
@@ -61,7 +61,7 @@ egui_glow = { version = "0.15", optional = true }
 tokio = { version = "1.15", features = ["full"] }
 parking_lot = { version = "0.11" }
 
-nix = { version = "0.23" }
+nix = { version = "0.24" }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0", features = ["gui-helper"] }
