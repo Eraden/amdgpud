@@ -1,12 +1,20 @@
 #!/usr/bin/env zsh
 
+version=$1
+
+if [[ "$version" == "" ]];
+then
+  echo "VERSION is needed"
+  exit 1
+fi
+
 set -e +x
 
 cd "$(git rev-parse --show-toplevel)"
 
 ROOT="$(git rev-parse --show-toplevel)"
 
-echo Building archlinux.zip
+echo Building archlinux.tar.gz
 
 ./scripts/build.sh
 
@@ -18,7 +26,7 @@ build_tag_gz() {
     cp ${ROOT}/services/${name}.service ./tmp
 
     cd ${ROOT}/tmp
-    tar -cvf ${zip_name}.tar.gz ${name}.service ${name}
+    tar -cvf ${zip_name}-${version}.tar.gz ${name}.service ${name}
     cd ${ROOT}
   done
 
@@ -34,10 +42,15 @@ tar_gui() {
 
   cd ${ROOT}/tmp
   unzip ${tar_name}.zip
+  rm ${tar_name}.zip
 
   cp ${ROOT}/target/x86_64-unknown-linux-musl/release/amdgui-helper ${ROOT}/tmp
   cp ${ROOT}/services/amdgui-helper.service ${ROOT}/tmp
-  tar -cvf ${tar_name}.tar.gz amdgui-helper amdguid amdgui-helper.service
+  tar -cvf ${tar_name}-${version}.tar.gz amdgui-helper amdguid amdgui-helper.service
+
+  rm amdgui-helper
+  rm amdgui-helper.service
+  rm amdguid
 }
 
 build_tag_gz amdfand
@@ -54,4 +67,4 @@ for f in $(ls *.tar.gz); do
   md5sum $f
 done
 
-zip -R archlinux.zip *.tar.gz
+tar -cvf archlinux-${version}.tar.gz *.tar.gz
