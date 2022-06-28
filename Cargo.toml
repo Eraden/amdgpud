@@ -2,6 +2,7 @@
 members = [
     "amdgpu",
     "amdgpu-config",
+    "amdfan",
     "amdfand",
     "amdvold",
     "amdmond",
