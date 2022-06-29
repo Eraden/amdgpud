@@ -140,7 +140,7 @@ fn handle_event(app: &mut App) -> io::Result<Status> {
                     }
                 },
             },
-            KeyCode::Up => match app.selected_point.clone() {
+            KeyCode::Up => match app.selected_point {
                 Some(index) => {
                     change_value(app, index, 1.0, y, y_mut);
                 }
@@ -155,12 +155,12 @@ fn handle_event(app: &mut App) -> io::Result<Status> {
                 }
             },
             KeyCode::Left => {
-                if let Some(index) = app.selected_point.clone() {
+                if let Some(index) = app.selected_point {
                     change_value(app, index, -1.0, x, x_mut);
                 }
             }
             KeyCode::Right => {
-                if let Some(index) = app.selected_point.clone() {
+                if let Some(index) = app.selected_point {
                     change_value(app, index, 1.0, x, x_mut);
                 }
             }
@@ -271,13 +271,13 @@ where
     let prev = index
         .checked_sub(1)
         .and_then(|i| app.config.speed_matrix().get(i))
-        .map(|v| read(v))
+        .map(read)
         .unwrap_or(0.0);
     let next = app
         .config
         .speed_matrix()
         .get(index + 1)
-        .map(|v| read(v))
+        .map(read)
         .unwrap_or(100.0);
     let current = app
         .config

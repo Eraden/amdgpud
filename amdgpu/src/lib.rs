@@ -10,6 +10,7 @@ mod error;
 pub mod helper_cmd;
 pub mod hw_mon;
 pub mod lock_file;
+pub mod ports;
 mod temp_input;
 pub mod utils;
 

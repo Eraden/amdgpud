@@ -47,7 +47,7 @@ fn main() -> Result<()> {
             path: sock_path.clone(),
         })?
     };
-    if let Err(e) = std::fs::set_permissions(&sock_path, Permissions::from_mode(0x777)) {
+    if let Err(e) = std::fs::set_permissions(&sock_path, Permissions::from_mode(0o777)) {
         log::error!("Failed to change gui helper socket file mode. {:?}", e);
     }
 

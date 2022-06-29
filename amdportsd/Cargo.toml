@@ -1,0 +1,15 @@
+[package]
+name = "amdportsd"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+amdgpu = { path = "../amdgpu", features = ["gui-helper"] }
+
+tokio = { version = "1.19.2", features = ["full"] }
+futures = { version = "0.3", features = [] }
+ron = { version = "0.7.1" }
+serde = { version = "1.0.137", features = ["derive"] }
+
+log = { version = "0.4" }
+pretty_env_logger = { version = "0.4" }

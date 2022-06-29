@@ -9,4 +9,5 @@ members = [
     "amdmond-lib",
     "amdguid",
     "amdgui-helper",
+    "amdportsd",
 ]
