@@ -5,6 +5,7 @@ use amdgpu::pidfile::ports::Output;
 use amdgpu::pidfile::Pid;
 use egui::Ui;
 use epi::Frame;
+use image::{ImageBuffer, ImageFormat, RgbaImage};
 use parking_lot::Mutex;
 
 use crate::widgets::outputs_settings::OutputsSettings;
@@ -82,9 +83,115 @@ static RELOAD_PID_LIST_DELAY: u8 = 18;
 #[cfg(debug_assertions)]
 static RELOAD_PID_LIST_DELAY: u8 = 80;
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub enum ImageType {
+    Vga,
+    MiniDvi,
+    Hdmi,
+    Audio,
+    OptimalAudio,
+    Dvi,
+    Thunderbolt,
+    DisplayPort,
+    MiniDisplayPort,
+    FireWire400,
+    Ps2,
+    Sata,
+    ESata,
+    Ethernet,
+    FireWire800,
+    UsbTypeA,
+    UsbTypeB,
+    UsbTypeC,
+    MicroUsb,
+    MimiUsb,
+}
+
+impl ImageType {
+    pub fn to_coords(&self) -> (u32, u32) {
+        match self {
+            ImageType::Vga => (0, 0),
+            ImageType::MiniDvi => (160, 0),
+            ImageType::Hdmi => (320, 0),
+            ImageType::Audio => (480, 0),
+            ImageType::OptimalAudio => (640, 0),
+            //
+            ImageType::Dvi => (0, 160),
+            ImageType::Thunderbolt => (160, 160),
+            ImageType::DisplayPort => (320, 160),
+            ImageType::MiniDisplayPort => (480, 160),
+            ImageType::FireWire400 => (640, 160),
+            //
+            ImageType::Ps2 => (0, 320),
+            ImageType::Sata => (160, 320),
+            ImageType::ESata => (320, 320),
+            ImageType::Ethernet => (480, 320),
+            ImageType::FireWire800 => (640, 320),
+            //
+            ImageType::UsbTypeA => (0, 480),
+            ImageType::UsbTypeB => (160, 480),
+            ImageType::UsbTypeC => (320, 480),
+            ImageType::MicroUsb => (480, 480),
+            ImageType::MimiUsb => (640, 480),
+        }
+    }
+}
+
 pub struct StatefulConfig {
     pub config: FanConfig,
     pub state: ChangeState,
+    pub images: HashMap<ImageType, RgbaImage>,
+}
+
+impl StatefulConfig {
+    pub fn new(config: FanConfig) -> Self {
+        let compact = image::load_from_memory_with_format(
+            include_bytes!("../assets/icons/ports.jpg"),
+            ImageFormat::Jpeg,
+        )
+        .unwrap()
+        .into_rgba8();
+        let images = [
+            ImageType::Vga,
+            ImageType::MiniDvi,
+            ImageType::Hdmi,
+            ImageType::Audio,
+            ImageType::OptimalAudio,
+            ImageType::Dvi,
+            ImageType::Thunderbolt,
+            ImageType::DisplayPort,
+            ImageType::MiniDisplayPort,
+            ImageType::FireWire400,
+            ImageType::Ps2,
+            ImageType::Sata,
+            ImageType::ESata,
+            ImageType::Ethernet,
+            ImageType::FireWire800,
+            ImageType::UsbTypeA,
+            ImageType::UsbTypeB,
+            ImageType::UsbTypeC,
+            ImageType::MicroUsb,
+            ImageType::MimiUsb,
+        ]
+        .iter()
+        .fold(HashMap::with_capacity(20), |mut memo, ty| {
+            let (offset_x, offset_y) = ty.to_coords();
+            let mut part = ImageBuffer::new(160, 160);
+            for x in 0..160 {
+                for y in 0..160 {
+                    part.put_pixel(x, y, compact.get_pixel(x + offset_x, y + offset_y).clone());
+                }
+            }
+            memo.insert(*ty, part);
+            memo
+        });
+
+        Self {
+            config,
+            state: ChangeState::New,
+            images,
+        }
+    }
 }
 
 pub struct AmdGui {
@@ -115,10 +222,7 @@ impl AmdGui {
             cooling_performance: CoolingPerformance::new(100, config.clone()),
             change_fan_settings: ChangeFanSettings::new(config.clone()),
             outputs_settings: OutputsSettings::default(),
-            config: StatefulConfig {
-                config,
-                state: ChangeState::New,
-            },
+            config: StatefulConfig::new(config),
             reload_pid_list_delay: RELOAD_PID_LIST_DELAY,
         }
     }

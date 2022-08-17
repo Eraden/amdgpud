@@ -60,7 +60,7 @@ impl OutputsSettings {
                                     ui.add(OutputWidget::new(output, &self.textures));
 
                                     ui.label(format!("port_number {}", output.port_number));
-                                    ui.label(format!("port_type {}", output.port_type));
+                                    ui.label(format!("port_type {:?}", output.port_type));
                                     ui.label(format!("card {}", output.card));
                                     ui.label(format!(
                                         "port_name {}",
@@ -79,8 +79,4 @@ impl OutputsSettings {
             // eprintln!("==============================================================");
         });
     }
-}
-
-fn vga_port_icon() {
-    // Texture
 }
