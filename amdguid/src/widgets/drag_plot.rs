@@ -1,10 +1,9 @@
 use egui::{emath, vec2, CursorIcon, Id, NumExt, PointerButton, Response, Sense, Ui, Vec2};
 use epaint::ahash::AHashSet;
 use epaint::color::Hsva;
-use epaint::Color32;
+use epaint::{Color32, Rounding};
 
-use crate::items::HLine;
-use crate::items::*;
+use crate::items::{HLine, *};
 use crate::transform::{Bounds, ScreenTransform};
 use crate::widgets::drag_plot_prepared::DragPlotPrepared;
 use crate::widgets::legend::Legend;
@@ -16,7 +15,8 @@ pub enum PlotMsg {
     Drag(emath::Vec2),
 }
 
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
+// , serde::Serialize, serde::Deserialize
+#[derive(Clone)]
 struct PlotMemory {
     bounds: Bounds,
     auto_bounds: bool,
@@ -125,12 +125,13 @@ where
         self.next_auto_color_idx += 1;
         let golden_ratio = (5.0_f32.sqrt() - 1.0) / 2.0; // 0.61803398875
         let h = i as f32 * golden_ratio;
-        Hsva::new(h, 0.85, 0.5, 1.0).into() // TODO: OkLab or some other perspective color space
+        Hsva::new(h, 0.85, 0.5, 1.0).into() // TODO: OkLab or some other
+                                            // perspective color space
     }
 
     /// width / height ratio of the data.
-    /// For instance, it can be useful to set this to `1.0` for when the two axes show the same
-    /// unit.
+    /// For instance, it can be useful to set this to `1.0` for when the two
+    /// axes show the same unit.
     /// By default the plot window's aspect ratio is used.
     #[must_use]
     pub fn data_aspect(mut self, data_aspect: f32) -> Self {
@@ -139,7 +140,8 @@ where
     }
 
     /// width / height ratio of the plot region.
-    /// By default no fixed aspect ratio is set (and width/height will fill the ui it is in).
+    /// By default no fixed aspect ratio is set (and width/height will fill the
+    /// ui it is in).
     #[must_use]
     pub fn view_aspect(mut self, view_aspect: f32) -> Self {
         self.view_aspect = Some(view_aspect);
@@ -147,7 +149,8 @@ where
     }
 
     /// Width of plot. By default a plot will fill the ui it is in.
-    /// If you set [`Self::view_aspect`], the width can be calculated from the height.
+    /// If you set [`Self::view_aspect`], the width can be calculated from the
+    /// height.
     #[must_use]
     pub fn width(mut self, width: f32) -> Self {
         self.min_size.x = width;
@@ -156,7 +159,8 @@ where
     }
 
     /// Height of plot. By default a plot will fill the ui it is in.
-    /// If you set [`Self::view_aspect`], the height can be calculated from the width.
+    /// If you set [`Self::view_aspect`], the height can be calculated from the
+    /// width.
     #[must_use]
     pub fn height(mut self, height: f32) -> Self {
         self.min_size.y = height;
@@ -240,9 +244,9 @@ where
         } = self;
         let plot_id = ui.make_persistent_id(id);
         let memory = ui
-            .memory()
-            .id_data
-            .get_mut_or_insert_with(plot_id, || PlotMemory {
+            .ctx()
+            .data()
+            .get_persisted_mut_or_insert_with(plot_id, || PlotMemory {
                 bounds: min_auto_bounds,
                 auto_bounds: false,
                 hovered_entry: None,
@@ -284,11 +288,11 @@ where
         };
 
         let (rect, response) = ui.allocate_exact_size(size, Sense::click_and_drag());
-        let plot_painter = ui.painter().sub_region(rect);
+        let plot_painter = ui.painter().with_clip_rect(rect);
 
         plot_painter.add(epaint::RectShape {
             rect,
-            corner_radius: 2.0,
+            rounding: Rounding::from(2.0),
             fill: ui.visuals().extreme_bg_color,
             stroke: ui.visuals().widgets.noninteractive.bg_stroke,
         });
@@ -408,16 +412,15 @@ where
             hovered_entry = legend.get_hovered_entry_name();
         }
 
-        ui.memory().id_data.insert(
-            plot_id,
-            PlotMemory {
+        ui.ctx()
+            .data()
+            .get_persisted_mut_or_insert_with(plot_id, || PlotMemory {
                 bounds: t_bounds,
                 auto_bounds,
                 hovered_entry,
                 hidden_items,
                 min_auto_bounds,
-            },
-        );
+            });
         response.on_hover_cursor(CursorIcon::Crosshair)
     }
 }

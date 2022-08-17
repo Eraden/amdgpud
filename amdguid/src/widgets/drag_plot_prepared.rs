@@ -1,8 +1,7 @@
-use egui::{emath, pos2, remap_clamp, vec2, Align2, Layout, NumExt, Pos2, Response, Ui};
-use epaint::{Color32, Rgba, Shape, Stroke, TextStyle};
+use egui::{emath, pos2, remap_clamp, vec2, Align2, Layout, NumExt, Pos2, Response, TextStyle, Ui};
+use epaint::{Color32, Rgba, Shape, Stroke};
 
-use crate::items::Value;
-use crate::items::{Line, PlotItem};
+use crate::items::{Line, PlotItem, Value};
 use crate::transform::ScreenTransform;
 
 pub struct DragPlotPrepared {
@@ -41,7 +40,9 @@ impl DragPlotPrepared {
             self.hover(ui, pointer, &mut shapes);
         }
 
-        ui.painter().sub_region(*transform.frame()).extend(shapes);
+        ui.painter()
+            .with_clip_rect(*transform.frame())
+            .extend(shapes);
     }
 
     fn paint_axis(&self, ui: &Ui, axis: usize, shapes: &mut Vec<Shape>) {
@@ -77,9 +78,12 @@ impl DragPlotPrepared {
 
             let n = (value_main / step_size).round() as i64;
             let spacing_in_points = if n % (base * base) == 0 {
-                step_size_in_points * (base_f * base_f) as f32 // think line (multiple of 100)
+                step_size_in_points * (base_f * base_f) as f32 // think line
+                                                               // (multiple of
+                                                               // 100)
             } else if n % base == 0 {
-                step_size_in_points * base_f as f32 // medium line (multiple of 10)
+                step_size_in_points * base_f as f32 // medium line (multiple of
+                                                    // 10)
             } else {
                 step_size_in_points // thin line
             };
@@ -106,7 +110,11 @@ impl DragPlotPrepared {
                 let color = color_from_alpha(ui, text_alpha);
                 let text = emath::round_to_decimals(value_main, 5).to_string(); // hack
 
-                let galley = ui.painter().layout_no_wrap(text, text_style, color);
+                let galley = ui.painter().layout_no_wrap(
+                    text,
+                    ui.style().text_styles.get(&text_style).cloned().unwrap(),
+                    color,
+                );
 
                 let mut text_pos = pos_in_gui + vec2(1.0, -galley.size().y);
 
@@ -135,15 +143,13 @@ impl DragPlotPrepared {
         let interact_radius: f32 = 16.0;
         let mut closest_value = None;
         let mut closest_dist_sq = interact_radius.powi(2);
-        for item in lines {
-            if let Some(values) = item.values() {
-                for (idx, value) in values.values.iter().enumerate() {
-                    let pos = transform.position_from_value(value);
-                    let dist_sq = pointer.distance_sq(pos);
-                    if dist_sq < closest_dist_sq {
-                        closest_dist_sq = dist_sq;
-                        closest_value = Some(idx);
-                    }
+        for values in lines.iter().filter_map(|v| v.values()) {
+            for (idx, value) in values.values.iter().enumerate() {
+                let pos = transform.position_from_value(value);
+                let dist_sq = pointer.distance_sq(pos);
+                if dist_sq < closest_dist_sq {
+                    closest_dist_sq = dist_sq;
+                    closest_value = Some(idx);
                 }
             }
         }
@@ -255,11 +261,15 @@ impl DragPlotPrepared {
         };
 
         shapes.push(Shape::text(
-            ui.fonts(),
+            &*ui.fonts(),
             pointer + vec2(3.0, -2.0),
             Align2::LEFT_BOTTOM,
             text,
-            TextStyle::Body,
+            ui.style()
+                .text_styles
+                .get(&TextStyle::Body)
+                .cloned()
+                .unwrap(),
             ui.visuals().text_color(),
         ));
     }

@@ -2,11 +2,11 @@ mod command;
 mod log_file;
 mod watch;
 
+use amdgpu::utils::ensure_config_dir;
+use amdgpu_config::monitor::{load_config, Config, DEFAULT_MONITOR_CONFIG_PATH};
 use gumdrop::Options;
 
 use crate::command::Command;
-use amdgpu::utils::ensure_config_dir;
-use amdgpu_config::monitor::{load_config, Config, DEFAULT_MONITOR_CONFIG_PATH};
 
 #[derive(gumdrop::Options)]
 pub struct Opts {

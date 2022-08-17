@@ -1,12 +1,13 @@
-use amdgpu::helper_cmd::Command;
+use amdgpu::pidfile::helper_cmd::{send_command, Command, Response};
 use amdgpu_config::fan::MatrixPoint;
 use egui::{emath, pos2, Layout, PointerButton, Ui};
 use epaint::Color32;
 
 use crate::app::{ChangeState, FanConfig, FanServices, StatefulConfig};
+use crate::widgets;
 use crate::widgets::drag_plot::PlotMsg;
 use crate::widgets::reload_section::ReloadSection;
-use crate::{widgets, widgets::ConfigFile};
+use crate::widgets::ConfigFile;
 
 pub struct ChangeFanSettings {
     config: FanConfig,
@@ -139,10 +140,10 @@ impl ChangeFanSettings {
                     ui.label("Saving...");
                 }
                 ChangeState::Success => {
-                    ui.add(egui::Label::new("Saved").text_color(Color32::GREEN));
+                    ui.add(egui::Label::new("Saved")/*.text_color(Color32::GREEN)*/);
                 }
                 ChangeState::Failure(msg) => {
-                    ui.add(egui::Label::new(format!("Failure. {}", msg)).text_color(Color32::RED));
+                    ui.add(egui::Label::new(format!("Failure. {}", msg))/*.text_color(Color32::RED)*/);
                 }
             }
         });
@@ -164,11 +165,11 @@ impl ChangeFanSettings {
             path: String::from(config.path()),
             content,
         };
-        match amdgpu::helper_cmd::send_command(command) {
-            Ok(amdgpu::helper_cmd::Response::ConfigFileSaveFailed(msg)) => {
+        match send_command(command) {
+            Ok(Response::ConfigFileSaveFailed(msg)) => {
                 state.state = ChangeState::Failure(msg);
             }
-            Ok(amdgpu::helper_cmd::Response::ConfigFileSaved) => {
+            Ok(Response::ConfigFileSaved) => {
                 state.state = ChangeState::Success;
             }
             _ => {}

@@ -1,9 +1,11 @@
+use std::ops::RangeInclusive;
+
+use egui::Ui;
+use epaint::{Color32, Shape};
+
 use crate::items::plot_item::PlotItem;
 use crate::items::values::Values;
 use crate::transform::{Bounds, ScreenTransform};
-use egui::Ui;
-use epaint::{Color32, Shape};
-use std::ops::RangeInclusive;
 
 /// A set of arrows.
 pub struct Arrows {

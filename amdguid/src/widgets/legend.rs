@@ -1,7 +1,9 @@
 use std::string::String;
 
-use egui::{pos2, vec2, Align, PointerButton, Rect, Response, Sense, WidgetInfo, WidgetType};
-use epaint::{Color32, TextStyle};
+use egui::{
+    pos2, vec2, Align, PointerButton, Rect, Response, Sense, TextStyle, WidgetInfo, WidgetType,
+};
+use epaint::Color32;
 
 /// Where to place the plot legend.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -26,7 +28,7 @@ impl Corner {
 }
 
 /// The configuration for a plot legend.
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Legend {
     pub text_style: TextStyle,
     pub background_alpha: f32,
@@ -89,9 +91,15 @@ impl LegendEntry {
             hovered,
         } = self;
 
-        let galley =
-            ui.fonts()
-                .layout_delayed_color(text, ui.style().body_text_style, f32::INFINITY);
+        let galley = ui.fonts().layout_delayed_color(
+            text,
+            ui.style()
+                .text_styles
+                .get(&TextStyle::Body)
+                .unwrap()
+                .clone(),
+            f32::INFINITY,
+        );
 
         let icon_size = galley.size().y;
         let icon_spacing = icon_size / 5.0;

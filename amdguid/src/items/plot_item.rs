@@ -1,8 +1,10 @@
-use crate::items::Values;
-use crate::transform::{Bounds, ScreenTransform};
+use std::ops::RangeInclusive;
+
 use egui::Ui;
 use epaint::{Color32, Shape};
-use std::ops::RangeInclusive;
+
+use crate::items::Values;
+use crate::transform::{Bounds, ScreenTransform};
 
 /// Trait shared by things that can be drawn in the plot.
 pub trait PlotItem {

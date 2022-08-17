@@ -1,10 +1,12 @@
 //! Create lock file and prevent running 2 identical services.
 //! NOTE: For 2 amdfand services you may just give 2 different names
 
-use crate::helper_cmd::Pid;
-use crate::IoFailure;
-use nix::libc;
 use std::path::Path;
+
+use nix::libc;
+
+use crate::pidfile::Pid;
+use crate::IoFailure;
 
 #[derive(Debug, thiserror::Error)]
 pub enum LockFileError {
@@ -56,7 +58,8 @@ impl PidLock {
     /// Create new lock file. File will be created if:
     /// * pid file does not exists
     /// * pid file exists but process is dead
-    /// * old pid and current pid have different names (lock file exists after reboot and PID was taken by other process)
+    /// * old pid and current pid have different names (lock file exists after
+    ///   reboot and PID was taken by other process)
     pub fn acquire(&mut self) -> Result<(), crate::error::AmdGpuError> {
         log::debug!("PID LOCK acquiring {}", self.pid_path);
         let pid = self.process_pid();
@@ -84,7 +87,7 @@ impl PidLock {
                     log::warn!("Conflicting {} and {} for process {}", old.0, pid.0, name);
                     return Err(LockFileError::Conflict { pid: old, name }.into());
                 }
-                Ok(name /*name isn't the same*/) => {
+                Ok(name /* name isn't the same */) => {
                     log::debug!(
                         "Old process {:?} and current process {:?} have different names, overriding....",
                         name, self.name

@@ -1,9 +1,11 @@
-#[cfg(feature = "gui-helper")]
-use crate::helper_cmd::GuiHelperError;
-use crate::lock_file::LockFileError;
-use crate::ports::PortsError;
-use pidlock::PidlockError;
 use std::fmt::{Debug, Display, Formatter};
+
+use pidlock::PidlockError;
+
+use crate::lock_file::LockFileError;
+#[cfg(feature = "gui-helper")]
+use crate::pidfile::helper_cmd::GuiHelperError;
+use crate::pidfile::ports::PortsError;
 
 pub struct IoFailure {
     pub io: std::io::Error,

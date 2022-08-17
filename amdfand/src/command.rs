@@ -1,5 +1,3 @@
-use gumdrop::Options;
-
 use amdgpu::hw_mon::HwMon;
 use amdgpu::utils::{linear_map, load_temp_inputs};
 use amdgpu::{
@@ -7,6 +5,7 @@ use amdgpu::{
     PULSE_WIDTH_MODULATION_MIN, PULSE_WIDTH_MODULATION_MODE,
 };
 use amdgpu_config::fan::Config;
+use gumdrop::Options;
 
 use crate::{change_mode, service};
 
@@ -90,7 +89,8 @@ impl Fan {
         v.into_iter().map(|hw| Self::wrap(hw, config)).collect()
     }
 
-    /// Change fan speed to given value if it's between minimal and maximal value
+    /// Change fan speed to given value if it's between minimal and maximal
+    /// value
     pub fn set_speed(&mut self, speed: f64) -> crate::Result<()> {
         let min = self.pwm_min() as f64;
         let max = self.pwm_max() as f64;
@@ -99,15 +99,16 @@ impl Fan {
         Ok(())
     }
 
-    /// Change gpu fan speed management to manual (amdfand will manage speed) instead of
-    /// GPU embedded manager
+    /// Change gpu fan speed management to manual (amdfand will manage speed)
+    /// instead of GPU embedded manager
     pub fn write_manual(&self) -> crate::Result<()> {
         self.hw_mon_write(MODULATION_ENABLED_FILE, 1)
             .map_err(FanError::ManualSpeedFailed)?;
         Ok(())
     }
 
-    /// Change gpu fan speed management to automatic, speed will be managed by GPU embedded manager
+    /// Change gpu fan speed management to automatic, speed will be managed by
+    /// GPU embedded manager
     pub fn write_automatic(&self) -> crate::Result<()> {
         self.hw_mon_write("pwm1_enable", 2)
             .map_err(FanError::AutomaticSpeedFailed)?;
@@ -132,8 +133,8 @@ impl Fan {
     }
 
     /// Get maximal GPU temperature from all inputs.
-    /// This is not recommended since GPU can heat differently in different parts and usually only
-    /// temp1 should be taken for consideration.
+    /// This is not recommended since GPU can heat differently in different
+    /// parts and usually only temp1 should be taken for consideration.
     pub fn max_gpu_temp(&self) -> crate::Result<f64> {
         if let Some(input) = self.temp_input.as_ref() {
             let value = self.read_gpu_temp(&input.as_string())?;

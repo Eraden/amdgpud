@@ -1,10 +1,12 @@
+use std::ops::RangeInclusive;
+
+use egui::{pos2, Image, Rect, Ui, Vec2};
+use epaint::{Color32, Shape, Stroke, TextureId};
+
 use crate::items::plot_item::PlotItem;
 use crate::items::value::Value;
 use crate::items::values::Values;
 use crate::transform::{Bounds, ScreenTransform};
-use egui::{pos2, Image, Rect, Ui, Vec2};
-use epaint::{Color32, Shape, Stroke, TextureId};
-use std::ops::RangeInclusive;
 
 /// An image in the plot.
 pub struct PlotImage {
@@ -65,8 +67,8 @@ impl PlotImage {
     ///
     /// This name will show up in the plot legend, if legends are turned on.
     ///
-    /// Multiple plot items may share the same name, in which case they will also share an entry in
-    /// the legend.
+    /// Multiple plot items may share the same name, in which case they will
+    /// also share an entry in the legend.
     #[allow(clippy::needless_pass_by_value)]
     #[must_use]
     pub fn name(mut self, name: impl ToString) -> Self {

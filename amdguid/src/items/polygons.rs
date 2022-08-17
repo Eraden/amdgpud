@@ -1,10 +1,12 @@
+use std::ops::RangeInclusive;
+
+use egui::{NumExt, Ui};
+use epaint::{Color32, Rgba, Shape, Stroke};
+
 use crate::items::plot_item::PlotItem;
 use crate::items::values::Values;
 use crate::items::{LineStyle, DEFAULT_FILL_ALPHA};
 use crate::transform::{Bounds, ScreenTransform};
-use egui::{NumExt, Ui};
-use epaint::{Color32, Rgba, Shape, Stroke};
-use std::ops::RangeInclusive;
 
 /// A convex polygon.
 pub struct Polygon {
@@ -28,8 +30,8 @@ impl Polygon {
         }
     }
 
-    /// Highlight this polygon in the plot by scaling up the stroke and reducing the fill
-    /// transparency.
+    /// Highlight this polygon in the plot by scaling up the stroke and reducing
+    /// the fill transparency.
     #[must_use]
     pub fn highlight(mut self) -> Self {
         self.highlight = true;
@@ -50,7 +52,8 @@ impl Polygon {
         self
     }
 
-    /// Stroke color. Default is `Color32::TRANSPARENT` which means a color will be auto-assigned.
+    /// Stroke color. Default is `Color32::TRANSPARENT` which means a color will
+    /// be auto-assigned.
     #[must_use]
     pub fn color(mut self, color: impl Into<Color32>) -> Self {
         self.stroke.color = color.into();
@@ -75,8 +78,8 @@ impl Polygon {
     ///
     /// This name will show up in the plot legend, if legends are turned on.
     ///
-    /// Multiple plot items may share the same name, in which case they will also share an entry in
-    /// the legend.
+    /// Multiple plot items may share the same name, in which case they will
+    /// also share an entry in the legend.
     #[allow(clippy::needless_pass_by_value)]
     #[must_use]
     pub fn name(mut self, name: impl ToString) -> Self {

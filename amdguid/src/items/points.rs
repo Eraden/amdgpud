@@ -1,17 +1,20 @@
+use std::ops::RangeInclusive;
+
+use egui::{pos2, vec2, Pos2, Ui};
+use epaint::{Color32, Shape, Stroke};
+
 use crate::items::marker_shape::MarkerShape;
 use crate::items::plot_item::PlotItem;
 use crate::items::value::Value;
 use crate::items::values::Values;
 use crate::transform::{Bounds, ScreenTransform};
-use egui::{pos2, vec2, Pos2, Ui};
-use epaint::{Color32, Shape, Stroke};
-use std::ops::RangeInclusive;
 
 /// A set of points.
 pub struct Points {
     pub(crate) series: Values,
     pub(crate) shape: MarkerShape,
-    /// Color of the marker. `Color32::TRANSPARENT` means that it will be picked automatically.
+    /// Color of the marker. `Color32::TRANSPARENT` means that it will be picked
+    /// automatically.
     pub(crate) color: Color32,
     /// Whether to fill the marker. Does not apply to all types.
     pub(crate) filled: bool,
@@ -64,7 +67,8 @@ impl Points {
         self
     }
 
-    /// Whether to add stems between the markers and a horizontal reference line.
+    /// Whether to add stems between the markers and a horizontal reference
+    /// line.
     #[must_use]
     pub fn stems(mut self, y_reference: impl Into<f32>) -> Self {
         self.stems = Some(y_reference.into());
@@ -82,8 +86,8 @@ impl Points {
     ///
     /// This name will show up in the plot legend, if legends are turned on.
     ///
-    /// Multiple plot items may share the same name, in which case they will also share an entry in
-    /// the legend.
+    /// Multiple plot items may share the same name, in which case they will
+    /// also share an entry in the legend.
     #[allow(clippy::needless_pass_by_value)]
     #[must_use]
     pub fn name(mut self, name: impl ToString) -> Self {

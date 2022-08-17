@@ -1,10 +1,11 @@
-use parking_lot::Mutex;
 use std::sync::Arc;
+
+use glium::glutin;
+use parking_lot::Mutex;
 use tokio::sync::mpsc::UnboundedReceiver;
 
 use crate::app::AmdGui;
 use crate::backend::create_ui;
-use glium::glutin;
 
 fn create_display(event_loop: &glutin::event_loop::EventLoop<()>) -> glium::Display {
     let window_builder = glutin::window::WindowBuilder::new()

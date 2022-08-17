@@ -1,12 +1,9 @@
 extern crate log;
 
-use gumdrop::Options;
-
-use amdgpu::{
-    lock_file::PidLock,
-    utils::{ensure_config_dir, hw_mons},
-};
+use amdgpu::lock_file::PidLock;
+use amdgpu::utils::{ensure_config_dir, hw_mons};
 use amdgpu_config::fan::{load_config, Config, DEFAULT_FAN_CONFIG_PATH};
+use gumdrop::Options;
 
 use crate::command::FanCommand;
 use crate::error::AmdFanError;

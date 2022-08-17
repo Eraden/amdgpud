@@ -1,10 +1,12 @@
-use crate::app::{FanConfig, FanServices};
-use amdgpu::Card;
-use amdmond_lib::AmdMon;
 use core::option::Option;
 use core::option::Option::Some;
-use egui::Ui;
 use std::collections::vec_deque::VecDeque;
+
+use amdgpu::Card;
+use amdmond_lib::AmdMon;
+use egui::Ui;
+
+use crate::app::{FanConfig, FanServices};
 
 pub struct CoolingPerformance {
     capacity: usize,
@@ -55,18 +57,20 @@ impl CoolingPerformance {
             .name("Overheating")
             .color(Color32::DARK_RED);
 
-        let plot = Plot::new("cooling performance")
+        ui.label("Temperature");
+        Plot::new("cooling performance")
             .allow_drag(false)
             .allow_zoom(false)
             .height(600.0)
-            .line(curve)
-            .hline(zero)
-            .hline(optimal)
-            .hline(target)
-            .legend(Legend::default());
+            .show(ui, |plot_ui| {
+                plot_ui.line(curve);
+                plot_ui.hline(zero);
+                plot_ui.hline(optimal);
+                plot_ui.hline(target);
+                // plot_ui.legend(Legend::default());
+            });
 
-        ui.label("Temperature");
-        ui.add(plot);
+        // ui.add(plot);
         ui.horizontal(|ui| {
             ui.label("Current temperature");
             ui.label(format!("{:<3.2}°C", current));

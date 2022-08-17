@@ -1,16 +1,14 @@
-use serde::{Deserialize, Serialize};
-
 pub use card::*;
 pub use error::*;
+use serde::{Deserialize, Serialize};
 pub use temp_input::*;
 
 mod card;
 mod error;
 #[cfg(feature = "gui-helper")]
-pub mod helper_cmd;
 pub mod hw_mon;
 pub mod lock_file;
-pub mod ports;
+pub mod pidfile;
 mod temp_input;
 pub mod utils;
 
@@ -28,7 +26,9 @@ pub static PULSE_WIDTH_MODULATION_MAX: &str = "pwm1_max";
 /// pulse width modulation fan level (0-255)
 pub static PULSE_WIDTH_MODULATION: &str = "pwm1";
 
-/// pulse width modulation fan control method (0: no fan speed control, 1: manual fan speed control using pwm interface, 2: automatic fan speed control)
+/// pulse width modulation fan control method (0: no fan speed control, 1:
+/// manual fan speed control using pwm interface, 2: automatic fan speed
+/// control)
 pub static PULSE_WIDTH_MODULATION_MODE: &str = "pwm1_enable";
 
 // static PULSE_WIDTH_MODULATION_DISABLED: &str = "0";

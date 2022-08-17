@@ -5,6 +5,8 @@ pub mod drag_plot;
 pub mod drag_plot_prepared;
 pub mod legend;
 pub mod legend_widget;
+pub mod output_widget;
+pub mod outputs_settings;
 pub mod reload_section;
 
 pub use change_fan_settings::*;

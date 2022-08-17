@@ -1,0 +1,7 @@
+imports_granularity = "Module"
+group_imports = "StdExternalCrate"
+reorder_modules = true
+reorder_imports = true
+use_field_init_shorthand = true
+wrap_comments = true
+edition = "2021"

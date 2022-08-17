@@ -1,7 +1,8 @@
-use crate::items::{ExplicitGenerator, Value};
-use crate::transform::Bounds;
 use std::collections::Bound;
 use std::ops::{RangeBounds, RangeInclusive};
+
+use crate::items::{ExplicitGenerator, Value};
+use crate::transform::Bounds;
 
 pub struct Values {
     pub values: Vec<Value>,
@@ -20,7 +21,8 @@ impl Values {
         Self::from_values(iter.collect())
     }
 
-    /// Draw a line based on a function `y=f(x)`, a range (which can be infinite) for x and the number of points.
+    /// Draw a line based on a function `y=f(x)`, a range (which can be
+    /// infinite) for x and the number of points.
     pub fn from_explicit_callback(
         function: impl Fn(f64) -> f64 + 'static,
         x_range: impl RangeBounds<f64>,
@@ -48,8 +50,9 @@ impl Values {
         }
     }
 
-    /// Draw a line based on a function `(x,y)=f(t)`, a range for t and the number of points.
-    /// The range may be specified as start..end or as start..=end.
+    /// Draw a line based on a function `(x,y)=f(t)`, a range for t and the
+    /// number of points. The range may be specified as start..end or as
+    /// start..=end.
     pub fn from_parametric_callback(
         function: impl Fn(f64) -> (f64, f64),
         t_range: impl RangeBounds<f64>,
@@ -92,13 +95,14 @@ impl Values {
         Self::from_values(values)
     }
 
-    /// Returns true if there are no data points available and there is no function to generate any.
+    /// Returns true if there are no data points available and there is no
+    /// function to generate any.
     pub fn is_empty(&self) -> bool {
         self.generator.is_none() && self.values.is_empty()
     }
 
-    /// If initialized with a generator function, this will generate `n` evenly spaced points in the
-    /// given range.
+    /// If initialized with a generator function, this will generate `n` evenly
+    /// spaced points in the given range.
     pub fn generate_points(&mut self, x_range: RangeInclusive<f64>) {
         if let Some(generator) = self.generator.take() {
             if let Some(intersection) = Self::range_intersection(&x_range, &generator.x_range) {

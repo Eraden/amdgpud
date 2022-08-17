@@ -1,7 +1,6 @@
-use serde::{Deserialize, Serialize};
-
 use amdgpu::utils::ensure_config;
 use amdgpu::LogLevel;
+use serde::{Deserialize, Serialize};
 
 pub static DEFAULT_MONITOR_CONFIG_PATH: &str = "/etc/amdfand/monitor.toml";
 

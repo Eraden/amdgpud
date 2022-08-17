@@ -1,10 +1,14 @@
-use crate::widgets::{ChangeFanSettings, CoolingPerformance};
-use amdgpu::helper_cmd::Pid;
-use egui::{CtxRef, Ui};
+use std::collections::{BTreeMap, HashMap};
+use std::sync::Arc;
+
+use amdgpu::pidfile::ports::Output;
+use amdgpu::pidfile::Pid;
+use egui::Ui;
 use epi::Frame;
 use parking_lot::Mutex;
-use std::collections::HashMap;
-use std::sync::Arc;
+
+use crate::widgets::outputs_settings::OutputsSettings;
+use crate::widgets::{ChangeFanSettings, CoolingPerformance};
 
 pub enum ChangeState {
     New,
@@ -61,6 +65,7 @@ impl From<Vec<Pid>> for FanServices {
 pub enum Page {
     Config,
     Monitoring,
+    Outputs,
     Settings,
 }
 
@@ -85,14 +90,16 @@ pub struct StatefulConfig {
 pub struct AmdGui {
     pub page: Page,
     pid_files: FanServices,
+    outputs: BTreeMap<String, Vec<Output>>,
     cooling_performance: CoolingPerformance,
     change_fan_settings: ChangeFanSettings,
+    outputs_settings: OutputsSettings,
     config: StatefulConfig,
     reload_pid_list_delay: u8,
 }
 
 impl epi::App for AmdGui {
-    fn update(&mut self, _ctx: &CtxRef, _frame: &mut Frame<'_>) {}
+    fn update(&mut self, _ctx: &epi::egui::Context, _frame: &Frame) {}
 
     fn name(&self) -> &str {
         "AMD GUI"
@@ -104,8 +111,10 @@ impl AmdGui {
         Self {
             page: Default::default(),
             pid_files: FanServices::from(vec![]),
+            outputs: Default::default(),
             cooling_performance: CoolingPerformance::new(100, config.clone()),
             change_fan_settings: ChangeFanSettings::new(config.clone()),
+            outputs_settings: OutputsSettings::default(),
             config: StatefulConfig {
                 config,
                 state: ChangeState::New,
@@ -124,6 +133,10 @@ impl AmdGui {
                 self.cooling_performance.draw(ui, &self.pid_files);
             }
             Page::Settings => {}
+            Page::Outputs => {
+                self.outputs_settings
+                    .draw(ui, &mut self.config, &self.outputs);
+            }
         }
     }
 
@@ -131,20 +144,71 @@ impl AmdGui {
         self.cooling_performance.tick();
         if self.pid_files.0.is_empty() || self.reload_pid_list_delay.checked_sub(1).is_none() {
             self.reload_pid_list_delay = RELOAD_PID_LIST_DELAY;
-            match amdgpu::helper_cmd::send_command(amdgpu::helper_cmd::Command::FanServices) {
-                Ok(amdgpu::helper_cmd::Response::Services(services))
-                    if self.pid_files.list_changed(&services) =>
-                {
-                    self.pid_files = FanServices::from(services);
+
+            {
+                use amdgpu::pidfile::helper_cmd::{send_command, Command, Response};
+
+                match send_command(Command::FanServices) {
+                    Ok(Response::Services(services)) if self.pid_files.list_changed(&services) => {
+                        self.pid_files = FanServices::from(services);
+                    }
+                    Ok(Response::Services(_services)) => {
+                        // SKIP
+                    }
+                    Ok(res) => {
+                        log::warn!("Unexpected response {:?} while loading fan services", res);
+                    }
+                    Err(e) => {
+                        log::warn!("Failed to load amd fan services pid list. {:?}", e);
+                    }
                 }
-                Ok(amdgpu::helper_cmd::Response::Services(_services)) => {
-                    // SKIP
-                }
-                Ok(res) => {
-                    log::warn!("Unexpected response {:?} while loading fan services", res);
-                }
-                Err(e) => {
-                    log::warn!("Failed to load amd fan services pid list. {:?}", e);
+            }
+
+            {
+                use amdgpu::pidfile::ports::{send_command, Command, Response};
+
+                match send_command(Command::Ports) {
+                    Ok(Response::NoOp) => {}
+                    Ok(Response::Ports(outputs)) => {
+                        let mut names = outputs.iter().fold(
+                            Vec::with_capacity(outputs.len()),
+                            |mut set, output| {
+                                set.push(format!("{}", output.card));
+                                set
+                            },
+                        );
+                        names.sort();
+
+                        let mut tree = BTreeMap::new();
+                        names.into_iter().for_each(|name| {
+                            tree.insert(name, Vec::with_capacity(6));
+                        });
+
+                        self.outputs = outputs.into_iter().fold(tree, |mut agg, output| {
+                            let v = agg
+                                .entry(output.card.clone())
+                                .or_insert_with(|| Vec::with_capacity(6));
+                            v.push(output);
+                            v.sort_by(|a, b| {
+                                format!(
+                                    "{}{}{}",
+                                    a.port_type,
+                                    a.port_name.as_deref().unwrap_or_default(),
+                                    a.port_number,
+                                )
+                                .cmp(&format!(
+                                    "{}{}{}",
+                                    b.port_type,
+                                    b.port_name.as_deref().unwrap_or_default(),
+                                    b.port_number,
+                                ))
+                            });
+                            agg
+                        });
+                    }
+                    Err(e) => {
+                        log::warn!("Failed to load amd fan services pid list. {:?}", e);
+                    }
                 }
             }
         } else {

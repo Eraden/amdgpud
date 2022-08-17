@@ -1,8 +1,9 @@
 //! AMD GUI helper communication toolkit
 
 use std::io::{Read, Write};
-use std::ops::Deref;
 use std::os::unix::net::UnixStream;
+
+use crate::pidfile::{Pid, PidResponse};
 
 #[derive(Debug, thiserror::Error)]
 pub enum GuiHelperError {
@@ -12,18 +13,6 @@ pub enum GuiHelperError {
     UnableToConnect(#[from] std::io::Error),
     #[error("Failed to service helper command. {0}")]
     Serialize(#[from] ron::Error),
-}
-
-#[derive(Debug, Copy, Clone, serde::Serialize, serde::Deserialize)]
-#[serde(transparent)]
-pub struct Pid(pub i32);
-
-impl Deref for Pid {
-    type Target = i32;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -39,6 +28,12 @@ pub enum Response {
     Services(Vec<Pid>),
     ConfigFileSaved,
     ConfigFileSaveFailed(String),
+}
+
+impl PidResponse for Response {
+    fn kill_response() -> Self {
+        Self::NoOp
+    }
 }
 
 pub fn sock_file() -> std::path::PathBuf {

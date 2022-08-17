@@ -1,11 +1,12 @@
 //! AMD GUI helper communication toolkit
 
 use std::io::{Read, Write};
-use std::ops::Deref;
 use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
+
+use crate::pidfile::PidResponse;
 
 #[derive(Debug, thiserror::Error)]
 pub enum PortsError {
@@ -74,18 +75,6 @@ impl Output {
     }
 }
 
-#[derive(Debug, Copy, Clone, serde::Serialize, serde::Deserialize)]
-#[serde(transparent)]
-pub struct Pid(pub i32);
-
-impl Deref for Pid {
-    type Target = i32;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub enum Command {
     Ports,
@@ -95,6 +84,12 @@ pub enum Command {
 pub enum Response {
     Ports(Vec<Output>),
     NoOp,
+}
+
+impl PidResponse for Response {
+    fn kill_response() -> Self {
+        Self::NoOp
+    }
 }
 
 pub fn sock_file() -> PathBuf {

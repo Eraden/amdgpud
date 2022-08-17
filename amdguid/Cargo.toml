@@ -40,28 +40,31 @@ gumdrop = { version = "0.8" }
 log = { version = "0.4" }
 pretty_env_logger = { version = "0.4" }
 
-egui = { version = "0.15", optional = true }
-epaint = { version = "0.15", features = ["serialize"], optional = true }
-epi = { version = "0.15", optional = true }
-winit = { version = "0.25", optional = true }
-egui-winit = { version = "0.15", optional = true }
+egui = { version = "0.18", optional = true, features = [] }
+epaint = { version = "0.18", features = [], optional = true }
+epi = { version = "0.17.0", optional = true }
+winit = { version = "0.26", optional = true }
+egui-winit = { version = "0.18", optional = true }
 # vulkan
-egui_vulkano = { version = "0.4", optional = true }
-vulkano-win = { version = "0.25", optional = true }
-vulkano = { version = "0.25", optional = true }
-vulkano-shaders = { version = "0.25", optional = true }
+egui_vulkano = { version = "0.8.0", optional = true }
+vulkano-win = { version = "0.29.0", optional = true }
+vulkano = { version = "0.29.0", optional = true }
+vulkano-shaders = { version = "0.29.0", optional = true }
+bytemuck = { version = "*" }
 # xorg glium
-glium = { version = "0.30", optional = true }
-egui_glium = { version = "0.15", optional = true }
+glium = { version = "0.32.1", optional = true }
+egui_glium = { version = "0.18.0", optional = true }
 # xorg glow
-glutin = { version = "0.27", optional = true }
+glutin = { version = "0.29", optional = true }
 glow = { version = "0.11", optional = true }
-egui_glow = { version = "0.15", optional = true }
+egui_glow = { version = "0.18", optional = true }
 
 tokio = { version = "1.15", features = ["full"] }
-parking_lot = { version = "0.11" }
+parking_lot = { version = "0.12" }
 
-nix = { version = "0.24" }
+nix = { version = "0.25" }
+
+image = { version = "0.24.2" }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0", features = ["gui-helper"] }

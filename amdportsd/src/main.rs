@@ -1,12 +1,11 @@
-use amdgpu::ports::{sock_file, Command, Response};
-use amdgpu::{ports::*, IoFailure};
 use std::fs::{DirEntry, Permissions};
-use std::io::{Read, Write};
-use std::net::Shutdown;
 use std::os::unix::fs::PermissionsExt;
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+
+use amdgpu::pidfile::ports::{sock_file, Command, Response, *};
+use amdgpu::IoFailure;
 
 fn parse_output(entry: DirEntry) -> Option<Output> {
     let ty = entry.file_type().ok()?;
@@ -60,45 +59,7 @@ async fn read_outputs(state: Arc<Mutex<Vec<Output>>>) {
     }
 }
 
-pub struct Service(UnixStream);
-
-impl Service {
-    /// Serialize and send command
-    pub fn write_response(&mut self, res: Response) {
-        match ron::to_string(&res) {
-            Ok(buffer) => match self.0.write_all(buffer.as_bytes()) {
-                Ok(_) => {
-                    log::info!("Response successfully written")
-                }
-                Err(e) => log::warn!("Failed to write response. {:?}", e),
-            },
-            Err(e) => {
-                log::warn!("Failed to serialize response {:?}. {:?}", res, e)
-            }
-        }
-    }
-
-    /// Read from `.sock` file new line separated commands
-    pub fn read_command(&mut self) -> Option<String> {
-        let mut command = String::with_capacity(100);
-        log::info!("Reading stream...");
-        read_line(&mut self.0, &mut command);
-        if command.is_empty() {
-            return None;
-        }
-        Some(command)
-    }
-
-    /// Close connection with no operation response
-    pub fn kill(mut self) {
-        self.write_response(Response::NoOp);
-        self.close();
-    }
-
-    pub fn close(self) {
-        let _ = self.0.shutdown(Shutdown::Both);
-    }
-}
+pub type Service = amdgpu::pidfile::Service<Response>;
 
 async fn service(state: Arc<Mutex<Vec<Output>>>) {
     let sock_path = sock_file();
@@ -121,27 +82,8 @@ async fn service(state: Arc<Mutex<Vec<Output>>>) {
     }
 }
 
-fn read_line(stream: &mut UnixStream, command: &mut String) {
-    let mut buffer = [0];
-    while stream.read_exact(&mut buffer).is_ok() {
-        if buffer[0] == b'\n' {
-            break;
-        }
-        match std::str::from_utf8(&buffer) {
-            Ok(s) => {
-                command.push_str(s);
-            }
-            Err(e) => {
-                log::error!("Failed to read from client. {:?}", e);
-                let _ = stream.shutdown(Shutdown::Both);
-                continue;
-            }
-        }
-    }
-}
-
 fn handle_connection(stream: UnixStream, state: Arc<Mutex<Vec<Output>>>) {
-    let mut service = Service(stream);
+    let mut service = Service::new(stream);
 
     let command = match service.read_command() {
         Some(s) => s,

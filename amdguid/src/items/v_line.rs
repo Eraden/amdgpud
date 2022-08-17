@@ -1,11 +1,13 @@
+use std::ops::RangeInclusive;
+
+use egui::Ui;
+use epaint::{Color32, Shape, Stroke};
+
 use crate::items::plot_item::PlotItem;
 use crate::items::value::Value;
 use crate::items::values::Values;
 use crate::items::LineStyle;
 use crate::transform::{Bounds, ScreenTransform};
-use egui::Ui;
-use epaint::{Color32, Shape, Stroke};
-use std::ops::RangeInclusive;
 
 impl PlotItem for VLine {
     fn get_shapes(&self, _ui: &mut Ui, transform: &ScreenTransform, shapes: &mut Vec<Shape>) {
@@ -95,7 +97,8 @@ impl VLine {
         self
     }
 
-    /// Stroke color. Default is `Color32::TRANSPARENT` which means a color will be auto-assigned.
+    /// Stroke color. Default is `Color32::TRANSPARENT` which means a color will
+    /// be auto-assigned.
     #[must_use]
     pub fn color(mut self, color: impl Into<Color32>) -> Self {
         self.stroke.color = color.into();
@@ -113,8 +116,8 @@ impl VLine {
     ///
     /// This name will show up in the plot legend, if legends are turned on.
     ///
-    /// Multiple plot items may share the same name, in which case they will also share an entry in
-    /// the legend.
+    /// Multiple plot items may share the same name, in which case they will
+    /// also share an entry in the legend.
     #[allow(clippy::needless_pass_by_value)]
     #[must_use]
     pub fn name(mut self, name: impl ToString) -> Self {

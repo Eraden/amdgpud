@@ -1,12 +1,13 @@
 pub mod errors;
 
-use crate::errors::AmdMonError;
 use amdgpu::hw_mon::HwMon;
 use amdgpu::utils::load_temp_inputs;
 use amdgpu::{
     TempInput, PULSE_WIDTH_MODULATION, PULSE_WIDTH_MODULATION_MAX, PULSE_WIDTH_MODULATION_MIN,
 };
 use amdgpu_config::fan;
+
+use crate::errors::AmdMonError;
 
 pub type Result<T> = std::result::Result<T, AmdMonError>;
 

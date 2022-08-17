@@ -2,10 +2,9 @@
 
 use std::ops::RangeInclusive;
 
+pub use arrows::*;
 use egui::Pos2;
 use epaint::{Color32, Shape, Stroke};
-
-pub use arrows::*;
 pub use h_line::*;
 pub use line::*;
 pub use marker_shape::*;
@@ -129,7 +128,8 @@ impl ToString for LineStyle {
 
 // ----------------------------------------------------------------------------
 
-/// Describes a function y = f(x) with an optional range for x and a number of points.
+/// Describes a function y = f(x) with an optional range for x and a number of
+/// points.
 pub struct ExplicitGenerator {
     function: Box<dyn Fn(f64) -> f64>,
     x_range: RangeInclusive<f64>,
@@ -138,8 +138,8 @@ pub struct ExplicitGenerator {
 
 // ----------------------------------------------------------------------------
 
-/// Returns the x-coordinate of a possible intersection between a line segment from `p1` to `p2` and
-/// a horizontal line at the given y-coordinate.
+/// Returns the x-coordinate of a possible intersection between a line segment
+/// from `p1` to `p2` and a horizontal line at the given y-coordinate.
 #[inline(always)]
 pub fn y_intersection(p1: &Pos2, p2: &Pos2, y: f32) -> Option<f32> {
     ((p1.y > y && p2.y < y) || (p1.y < y && p2.y > y))

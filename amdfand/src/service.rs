@@ -1,13 +1,13 @@
-use gumdrop::Options;
-
 use amdgpu::utils::hw_mons;
 use amdgpu::{config_reloaded, is_reload_required, listen_unix_signal};
 use amdgpu_config::fan::Config;
+use gumdrop::Options;
 
 use crate::command::Fan;
 use crate::AmdFanError;
 
-/// Start service which will change fan speed according to config and GPU temperature
+/// Start service which will change fan speed according to config and GPU
+/// temperature
 pub fn run(mut config: Config) -> crate::Result<()> {
     listen_unix_signal();
 

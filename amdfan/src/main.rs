@@ -1,17 +1,20 @@
+use std::io;
+use std::path::PathBuf;
+use std::time::{Duration, Instant};
+
 use amdgpu_config::fan::{MatrixPoint, DEFAULT_FAN_CONFIG_PATH};
-use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
-    execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+use crossterm::event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode};
+use crossterm::execute;
+use crossterm::terminal::{
+    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
 };
 use gumdrop::Options;
-use std::path::PathBuf;
-use std::time::Instant;
-use std::{io, time::Duration};
-use tui::backend::Backend;
+use tui::backend::{Backend, CrosstermBackend};
+use tui::layout::*;
 use tui::style::{Color, Modifier, Style};
 use tui::symbols::Marker;
-use tui::{backend::CrosstermBackend, layout::*, widgets::*, Frame, Terminal};
+use tui::widgets::*;
+use tui::{Frame, Terminal};
 
 #[derive(Options)]
 struct Opts {

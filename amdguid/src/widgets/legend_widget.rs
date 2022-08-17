@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 
-use egui::{vec2, Align, Direction, Frame, Layout, Rect, Response, Ui, Widget};
+use egui::style::Margin;
+use egui::{Align, Direction, Frame, Layout, Rect, Response, Ui, Widget};
 use epaint::ahash::AHashSet;
 use epaint::Color32;
 
@@ -15,8 +16,8 @@ pub struct LegendWidget {
 }
 
 impl LegendWidget {
-    /// Create a new legend from items, the names of items that are hidden and the style of the
-    /// text. Returns `None` if the legend has no entries.
+    /// Create a new legend from items, the names of items that are hidden and
+    /// the style of the text. Returns `None` if the legend has no entries.
     pub fn try_new(
         rect: Rect,
         config: Legend,
@@ -89,10 +90,11 @@ impl Widget for &mut LegendWidget {
         let mut legend_ui = ui.child_ui(legend_rect, layout);
         legend_ui
             .scope(|ui| {
-                ui.style_mut().body_text_style = config.text_style;
+                // ui.style_mut().body_text_style = config.text_style;
                 let background_frame = Frame {
-                    margin: vec2(8.0, 4.0),
-                    corner_radius: ui.style().visuals.window_corner_radius,
+                    inner_margin: Margin::symmetric(8.0, 4.0),
+                    outer_margin: Default::default(),
+                    rounding: ui.style().visuals.window_rounding,
                     shadow: epaint::Shadow::default(),
                     fill: ui.style().visuals.extreme_bg_color,
                     stroke: ui.style().visuals.window_stroke(),

@@ -28,7 +28,8 @@ impl MatrixPoint {
 pub struct Config {
     #[serde(skip)]
     path: String,
-    /// One of temperature inputs /sys/class/drm/card{X}/device/hwmon/hwmon{Y}/temp{Z}_input
+    /// One of temperature inputs
+    /// /sys/class/drm/card{X}/device/hwmon/hwmon{Y}/temp{Z}_input
     /// If nothing is provided higher reading will be taken (this is not good!)
     temp_input: Option<TempInput>,
     log_level: LogLevel,
@@ -242,9 +243,8 @@ pub fn load_config(config_path: &str) -> Result<Config, ConfigError> {
 
 #[cfg(test)]
 mod parse_config {
-    use serde::Deserialize;
-
     use amdgpu::{AmdGpuError, Card, TempInput};
+    use serde::Deserialize;
 
     #[derive(Deserialize, PartialEq, Eq, Debug)]
     pub struct Foo {

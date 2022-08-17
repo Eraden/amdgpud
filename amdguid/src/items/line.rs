@@ -1,12 +1,14 @@
+use std::ops::RangeInclusive;
+
+use egui::{pos2, NumExt, Ui};
+use epaint::{Color32, Mesh, Rgba, Shape, Stroke};
+
 use crate::items;
 use crate::items::plot_item::PlotItem;
 use crate::items::value::Value;
 use crate::items::values::Values;
 use crate::items::{LineStyle, DEFAULT_FILL_ALPHA};
 use crate::transform::{Bounds, ScreenTransform};
-use egui::{pos2, NumExt, Ui};
-use epaint::{Color32, Mesh, Rgba, Shape, Stroke};
-use std::ops::RangeInclusive;
 
 impl PlotItem for Line {
     fn get_shapes(&self, _ui: &mut Ui, transform: &ScreenTransform, shapes: &mut Vec<Shape>) {
@@ -120,7 +122,8 @@ impl Line {
         }
     }
 
-    /// Stroke color. Default is `Color32::TRANSPARENT` which means a color will be auto-assigned.
+    /// Stroke color. Default is `Color32::TRANSPARENT` which means a color will
+    /// be auto-assigned.
     #[must_use]
     pub fn color(mut self, color: impl Into<Color32>) -> Self {
         self.stroke.color = color.into();

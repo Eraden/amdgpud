@@ -1,11 +1,13 @@
+use std::ops::RangeInclusive;
+
+use egui::Ui;
+use epaint::{Color32, Shape, Stroke};
+
 use crate::items::plot_item::PlotItem;
 use crate::items::value::Value;
 use crate::items::values::Values;
 use crate::items::LineStyle;
 use crate::transform::{Bounds, ScreenTransform};
-use egui::Ui;
-use epaint::{Color32, Shape, Stroke};
-use std::ops::RangeInclusive;
 
 /// A horizontal line in a plot, filling the full width
 #[derive(Clone, Debug, PartialEq)]
@@ -28,7 +30,8 @@ impl HLine {
         }
     }
 
-    /// Stroke color. Default is `Color32::TRANSPARENT` which means a color will be auto-assigned.
+    /// Stroke color. Default is `Color32::TRANSPARENT` which means a color will
+    /// be auto-assigned.
     #[must_use]
     pub fn color(mut self, color: impl Into<Color32>) -> Self {
         self.stroke.color = color.into();

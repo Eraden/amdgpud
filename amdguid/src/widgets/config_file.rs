@@ -1,6 +1,5 @@
-use egui::{PointerButton, Response, Sense, Ui, Widget};
-
 use amdgpu_config::fan::MatrixPoint;
+use egui::{PointerButton, Response, Sense, Ui, Widget};
 
 use crate::app::FanConfig;
 

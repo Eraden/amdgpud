@@ -1,10 +1,12 @@
+use std::ops::RangeInclusive;
+
+use egui::{Align2, Rect, TextStyle, Ui};
+use epaint::{Color32, Shape, Stroke};
+
 use crate::items::plot_item::PlotItem;
 use crate::items::value::Value;
 use crate::items::values::Values;
 use crate::transform::{Bounds, ScreenTransform};
-use egui::{Align2, Rect, Ui};
-use epaint::{Color32, Shape, Stroke, TextStyle};
-use std::ops::RangeInclusive;
 
 /// Text inside the plot.
 pub struct Text {
@@ -45,7 +47,8 @@ impl Text {
         self
     }
 
-    /// Text color. Default is `Color32::TRANSPARENT` which means a color will be auto-assigned.
+    /// Text color. Default is `Color32::TRANSPARENT` which means a color will
+    /// be auto-assigned.
     #[must_use]
     pub fn color(mut self, color: impl Into<Color32>) -> Self {
         self.color = color.into();
@@ -63,8 +66,8 @@ impl Text {
     ///
     /// This name will show up in the plot legend, if legends are turned on.
     ///
-    /// Multiple plot items may share the same name, in which case they will also share an entry in
-    /// the legend.
+    /// Multiple plot items may share the same name, in which case they will
+    /// also share an entry in the legend.
     #[allow(clippy::needless_pass_by_value)]
     #[must_use]
     pub fn name(mut self, name: impl ToString) -> Self {
@@ -80,10 +83,11 @@ impl PlotItem for Text {
         } else {
             self.color
         };
+        let fond_id = ui.style().text_styles.get(&self.style).unwrap();
         let pos = transform.position_from_value(&self.position);
         let galley = ui
             .fonts()
-            .layout_no_wrap(self.text.clone(), self.style, color);
+            .layout_no_wrap(self.text.clone(), fond_id.clone(), color);
         let rect = self
             .anchor
             .anchor_rect(Rect::from_min_size(pos, galley.size()));

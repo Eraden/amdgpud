@@ -108,7 +108,9 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, mut receiver: UnboundedReceiver<bool
 
                 egui.on_event(&event);
 
-                gl_window.window().request_redraw(); // TODO: ask egui if the events warrants a repaint instead
+                gl_window.window().request_redraw(); // TODO: ask egui if the
+                                                     // events warrants a
+                                                     // repaint instead
             }
             glutin::event::Event::LoopDestroyed => {
                 egui.destroy(&gl);

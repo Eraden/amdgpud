@@ -1,7 +1,6 @@
-use gumdrop::Options;
-
 use amdgpu::utils::hw_mons;
 use amdgpu_config::fan::Config;
+use gumdrop::Options;
 
 use crate::command::Fan;
 use crate::{AmdFanError, FanMode};
