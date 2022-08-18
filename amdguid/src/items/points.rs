@@ -118,7 +118,7 @@ impl PlotItem for Points {
         let default_stroke = Stroke::new(stroke_size, *color);
         let mut stem_stroke = default_stroke;
         let stroke = (!filled)
-            .then(|| default_stroke)
+            .then_some(default_stroke)
             .unwrap_or_else(Stroke::none);
         let fill = filled.then(|| *color).unwrap_or_default();
 

@@ -81,7 +81,7 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, _receiver: UnboundedReceiver<bool>) 
 
     let event_loop = EventLoop::new();
     let surface = WindowBuilder::new()
-        .with_title("egui_vulkano demo")
+        .with_title("AMD GUID")
         .with_fullscreen(Some(Fullscreen::Borderless(None)))
         .build_vk_surface(&event_loop, instance.clone())
         .unwrap();
@@ -176,32 +176,34 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, _receiver: UnboundedReceiver<bool>) 
     };
 
     mod vs {
+        #![allow(clippy::needless_question_mark)]
         vulkano_shaders::shader! {
             ty: "vertex",
             src: "
-				#version 450
+#version 450
 
-				layout(location = 0) in vec2 position;
+layout(location = 0) in vec2 position;
 
-				void main() {
-					gl_Position = vec4(position, 0.0, 1.0);
-				}
-			"
+void main() {
+    gl_Position = vec4(position, 0.0, 1.0);
+}
+            "
         }
     }
 
     mod fs {
+        #![allow(clippy::needless_question_mark)]
         vulkano_shaders::shader! {
             ty: "fragment",
             src: "
-				#version 450
+#version 450
 
-				layout(location = 0) out vec4 f_color;
+layout(location = 0) out vec4 f_color;
 
-				void main() {
-					f_color = vec4(1.0, 0.0, 0.0, 1.0);
-				}
-			"
+void main() {
+    f_color = vec4(1.0, 0.0, 0.0, 1.0);
+}
+            "
         }
     }
 
@@ -220,7 +222,7 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, _receiver: UnboundedReceiver<bool>) 
         },
         passes: [
             { color: [color], depth_stencil: {}, input: [] },
-            { color: [color], depth_stencil: {}, input: [] } // Create a second renderpass to draw egui
+            { color: [color], depth_stencil: {}, input: [] } // Create a second render-pass to draw egui
         ]
     )
     .unwrap();
@@ -231,7 +233,7 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, _receiver: UnboundedReceiver<bool>) 
         .input_assembly_state(InputAssemblyState::new())
         .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
         .fragment_shader(fs.entry_point("main").unwrap(), ())
-        .render_pass(Subpass::from(render_pass.clone().into(), 0).unwrap())
+        .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
         .build(device.clone())
         .unwrap();
 
@@ -241,7 +243,8 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, _receiver: UnboundedReceiver<bool>) 
         depth_range: 0.0..1.0,
     };
 
-    let mut framebuffers = window_size_dependent_setup(&images, render_pass.clone(), &mut viewport);
+    let mut frame_buffers =
+        window_size_dependent_setup(&images, render_pass.clone(), &mut viewport);
 
     let mut recreate_swapchain = false;
 
@@ -260,9 +263,6 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, _receiver: UnboundedReceiver<bool>) 
     .unwrap();
 
     //Set up some window to look at for the test
-
-    // let mut my_texture = egui_ctx.load_texture("my_texture",
-    // ColorImage::example());
 
     event_loop.run(move |event, _, control_flow| {
         match event {
@@ -304,7 +304,7 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, _receiver: UnboundedReceiver<bool>) 
                         };
 
                     swapchain = new_swapchain;
-                    framebuffers = window_size_dependent_setup(
+                    frame_buffers = window_size_dependent_setup(
                         &new_images,
                         render_pass.clone(),
                         &mut viewport,
@@ -352,7 +352,7 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, _receiver: UnboundedReceiver<bool>) 
                 // Do your usual rendering
                 builder
                     .begin_render_pass(
-                        framebuffers[image_num].clone(),
+                        frame_buffers[image_num].clone(),
                         SubpassContents::Inline,
                         clear_values,
                     )

@@ -19,9 +19,25 @@ fn parse_output(entry: DirEntry) -> Option<Output> {
         .map(String::from)
         .collect::<Vec<_>>()
         .into_iter();
+
+    let modes = std::fs::read_to_string(entry.path().join("modes"))
+        .unwrap_or_default()
+        .lines()
+        .filter_map(|s| {
+            let mut it = s.split('x');
+            let width = it.next().and_then(|s| s.parse::<u16>().ok())?;
+            let height = it.next().and_then(|s| s.parse::<u16>().ok())?;
+            Some(OutputMode { width, height })
+        })
+        .collect::<Vec<_>>();
+
+    let card = it.next()?.strip_prefix("card")?.to_string();
+    let port_type = it.next()?;
     let mut output = Output {
-        card: it.next()?.strip_prefix("card")?.to_string(),
-        port_type: it.next()?,
+        card,
+        ty: OutputType::parse_str(&port_type),
+        port_type,
+        modes,
         ..Default::default()
     };
     let mut it = it.rev();

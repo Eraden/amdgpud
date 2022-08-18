@@ -149,10 +149,12 @@ impl ChangeFanSettings {
         });
     }
 
+    #[allow(clippy::explicit_auto_deref)]
     fn save_config(config: FanConfig, state: &mut StatefulConfig) {
         state.state = ChangeState::Reloading;
 
         let config = config.lock();
+
         let c: &amdgpu_config::fan::Config = &*config;
         let content = match toml::to_string(c) {
             Err(e) => {

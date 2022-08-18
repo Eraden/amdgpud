@@ -10,12 +10,12 @@ use std::sync::Arc;
 use egui::panel::TopBottomSide;
 use egui::{Layout, PointerButton};
 #[cfg(feature = "xorg-glium")]
-pub use glium_backend::run_app;
+pub use glium_backend::*;
 #[cfg(feature = "xorg-glow")]
-pub use glow_backend::run_app;
+pub use glow_backend::*;
 use parking_lot::Mutex;
 #[cfg(feature = "wayland")]
-pub use wayland_backend::run_app;
+pub use wayland_backend::*;
 
 use crate::app::Page;
 use crate::AmdGui;

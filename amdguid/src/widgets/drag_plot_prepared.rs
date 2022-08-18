@@ -260,6 +260,7 @@ impl DragPlotPrepared {
             }
         };
 
+        #[allow(clippy::explicit_auto_deref)]
         shapes.push(Shape::text(
             &*ui.fonts(),
             pointer + vec2(3.0, -2.0),

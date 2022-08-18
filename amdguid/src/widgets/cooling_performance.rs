@@ -15,6 +15,7 @@ pub struct CoolingPerformance {
 }
 
 impl CoolingPerformance {
+    #[allow(clippy::explicit_auto_deref)]
     pub fn new(capacity: usize, fan_config: FanConfig) -> Self {
         let amd_mon = amdgpu::hw_mon::open_hw_mon(Card(0))
             .map(|hw| amdmond_lib::AmdMon::wrap(hw, &*fan_config.lock()))

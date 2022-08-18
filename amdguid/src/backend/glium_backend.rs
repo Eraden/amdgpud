@@ -1,10 +1,13 @@
+use std::collections::HashMap;
+use std::rc::Rc;
 use std::sync::Arc;
 
 use glium::glutin;
+use image::RgbaImage;
 use parking_lot::Mutex;
 use tokio::sync::mpsc::UnboundedReceiver;
 
-use crate::app::AmdGui;
+use crate::app::{AmdGui, ImageStorage, ImageType};
 use crate::backend::create_ui;
 
 fn create_display(event_loop: &glutin::event_loop::EventLoop<()>) -> glium::Display {

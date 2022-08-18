@@ -152,6 +152,7 @@ dependencies = [
  "egui_glium",
  "egui_glow",
  "egui_vulkano",
+ "emath 0.18.0",
  "epaint 0.18.1",
  "epi",
  "glium 0.32.1",
