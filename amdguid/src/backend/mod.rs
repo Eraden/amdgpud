@@ -23,14 +23,7 @@ use crate::AmdGui;
 pub fn create_ui(amd_gui: Arc<Mutex<AmdGui>>, ctx: &egui::Context) {
     egui::containers::TopBottomPanel::new(TopBottomSide::Top, "menu").show(ctx, |ui| {
         let mut child = ui.child_ui(ui.available_rect_before_wrap(), Layout::left_to_right());
-        if child
-            .add(
-                egui::Button::new("Outputs"), /* .text_style(TextStyle::Heading) */
-            )
-            .clicked_by(PointerButton::Primary)
-        {
-            amd_gui.lock().page = Page::Outputs;
-        }
+
         if child
             .add(
                 egui::Button::new("Config"), /* .text_style(TextStyle::Heading) */
@@ -46,6 +39,14 @@ pub fn create_ui(amd_gui: Arc<Mutex<AmdGui>>, ctx: &egui::Context) {
             .clicked_by(PointerButton::Primary)
         {
             amd_gui.lock().page = Page::Monitoring;
+        }
+        if child
+            .add(
+                egui::Button::new("Outputs"), /* .text_style(TextStyle::Heading) */
+            )
+            .clicked_by(PointerButton::Primary)
+        {
+            amd_gui.lock().page = Page::Outputs;
         }
         if child
             .add(

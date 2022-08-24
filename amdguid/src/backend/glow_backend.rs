@@ -53,7 +53,7 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, mut receiver: UnboundedReceiver<bool
         loop {
             if receiver.recv().await.is_some() {
                 if let Err(e) = proxy.send_event(()) {
-                    log::error!("{:?}", e);
+                    tracing::error!("{:?}", e);
                 }
             }
         }

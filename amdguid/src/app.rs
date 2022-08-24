@@ -41,6 +41,14 @@ impl FanService {
 
 pub struct FanServices(pub Vec<FanService>);
 
+impl std::ops::Deref for FanServices {
+    type Target = Vec<FanService>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 impl FanServices {
     pub fn list_changed(&self, other: &[Pid]) -> bool {
         if self.0.len() != other.len() {
@@ -108,8 +116,8 @@ impl StatefulConfig {
 
         // 80x80
         let image = {
-            let bytes = include_bytes!("../assets/icons/ports2.jpg");
-            image::load_from_memory_with_format(bytes, ImageFormat::Jpeg).unwrap()
+            let bytes = include_bytes!("../assets/icons/ports2.png");
+            image::load_from_memory_with_format(bytes, ImageFormat::Png).unwrap()
         };
 
         let ctx = ui.ctx();
@@ -139,8 +147,8 @@ impl StatefulConfig {
 
 pub struct AmdGui {
     pub page: Page,
-    pid_files: FanServices,
-    outputs: BTreeMap<String, Vec<Output>>,
+    pid_files: SocketState<FanServices>,
+    outputs: SocketState<BTreeMap<String, Vec<Output>>>,
     cooling_performance: CoolingPerformance,
     change_fan_settings: ChangeFanSettings,
     outputs_settings: OutputsSettings,
@@ -160,13 +168,13 @@ impl AmdGui {
     pub fn new_with_config(config: FanConfig) -> Self {
         Self {
             page: Default::default(),
-            pid_files: FanServices::from(vec![]),
-            outputs: Default::default(),
+            pid_files: SocketState::NotAvailable,
+            outputs: SocketState::NotAvailable,
             cooling_performance: CoolingPerformance::new(100, config.clone()),
             change_fan_settings: ChangeFanSettings::new(config.clone()),
             outputs_settings: OutputsSettings::default(),
             config: StatefulConfig::new(config),
-            reload_pid_list_delay: RELOAD_PID_LIST_DELAY,
+            reload_pid_list_delay: 0,
         }
     }
 
@@ -175,65 +183,91 @@ impl AmdGui {
 
         match self.page {
             Page::Config => {
-                self.change_fan_settings
-                    .draw(ui, &mut self.pid_files, &mut self.config);
+                if let SocketState::Connected(pid_files) = &mut self.pid_files {
+                    self.change_fan_settings
+                        .draw(ui, pid_files, &mut self.config);
+                } else {
+                    ui.label("Not available");
+                }
             }
             Page::Monitoring => {
-                self.cooling_performance.draw(ui, &self.pid_files);
+                if let SocketState::Connected(pid_files) = &mut self.pid_files {
+                    self.cooling_performance.draw(ui, pid_files);
+                } else {
+                    ui.label("Not available");
+                }
             }
             Page::Settings => {}
             Page::Outputs => {
-                self.outputs_settings
-                    .draw(ui, &mut self.config, &self.outputs);
+                if let SocketState::Connected(outputs) = &self.outputs {
+                    self.outputs_settings.draw(ui, &mut self.config, outputs);
+                } else {
+                    ui.label("Not available");
+                }
             }
         }
     }
 
     pub fn tick(&mut self) {
         self.cooling_performance.tick();
-        if self.pid_files.0.is_empty() || self.reload_pid_list_delay.checked_sub(1).is_none() {
-            self.reload_pid_list_delay = RELOAD_PID_LIST_DELAY;
+        let can_decrease = self.reload_pid_list_delay > 0;
 
-            {
-                use amdgpu::pidfile::helper_cmd::{send_command, Command, Response};
+        if can_decrease {
+            self.reload_pid_list_delay -= 1;
+            return;
+        }
 
-                match send_command(Command::FanServices) {
-                    Ok(Response::Services(services)) if self.pid_files.list_changed(&services) => {
-                        self.pid_files = FanServices::from(services);
-                    }
-                    Ok(Response::Services(_services)) => {
-                        // SKIP
-                    }
-                    Ok(res) => {
-                        log::warn!("Unexpected response {:?} while loading fan services", res);
-                    }
-                    Err(e) => {
-                        log::warn!("Failed to load amd fan services pid list. {:?}", e);
-                    }
+        self.reload_pid_list_delay = RELOAD_PID_LIST_DELAY;
+
+        {
+            use amdgpu::pidfile::helper_cmd::{send_command, Command, Response};
+
+            match send_command(Command::FanServices) {
+                Ok(Response::Services(services))
+                    if self
+                        .pid_files
+                        .connected()
+                        .map(|c| c.list_changed(&services))
+                        .unwrap_or(true) =>
+                {
+                    self.pid_files = SocketState::Connected(FanServices::from(services));
+                }
+                Ok(Response::Services(_services)) => {
+                    // SKIP
+                }
+                Ok(res) => {
+                    tracing::warn!("Unexpected response {:?} while loading fan services", res);
+                }
+                Err(e) => {
+                    self.pid_files = SocketState::NotAvailable;
+                    tracing::warn!("Failed to load amd fan services pid list. {:?}", e);
                 }
             }
+        }
 
-            {
-                use amdgpu::pidfile::ports::{send_command, Command, Response};
+        {
+            use amdgpu::pidfile::ports::{send_command, Command, Response};
 
-                match send_command(Command::Ports) {
-                    Ok(Response::NoOp) => {}
-                    Ok(Response::Ports(outputs)) => {
-                        let mut names = outputs.iter().fold(
-                            Vec::with_capacity(outputs.len()),
-                            |mut set, output| {
-                                set.push(output.card.clone());
-                                set
-                            },
-                        );
-                        names.sort();
+            match send_command(Command::Ports) {
+                Ok(Response::NoOp) => {}
+                Ok(Response::Ports(outputs)) => {
+                    let mut names = outputs.iter().fold(
+                        Vec::with_capacity(outputs.len()),
+                        |mut set, output| {
+                            set.push(output.card.clone());
+                            set
+                        },
+                    );
+                    names.sort();
 
-                        let mut tree = BTreeMap::new();
-                        names.into_iter().for_each(|name| {
-                            tree.insert(name, Vec::with_capacity(6));
-                        });
+                    let mut tree = BTreeMap::new();
+                    names.into_iter().for_each(|name| {
+                        tree.insert(name, Vec::with_capacity(6));
+                    });
 
-                        self.outputs = outputs.into_iter().fold(tree, |mut agg, output| {
+                    self.outputs = SocketState::Connected(outputs.into_iter().fold(
+                        tree,
+                        |mut agg, output| {
                             let v = agg
                                 .entry(output.card.clone())
                                 .or_insert_with(|| Vec::with_capacity(6));
@@ -253,15 +287,31 @@ impl AmdGui {
                                 ))
                             });
                             agg
-                        });
+                        },
+                    ));
+                }
+                Err(e) => {
+                    if matches!(self.page, Page::Outputs) {
+                        self.page = Page::Config;
                     }
-                    Err(e) => {
-                        log::warn!("Failed to load amd fan services pid list. {:?}", e);
-                    }
+                    self.outputs = SocketState::NotAvailable;
+                    tracing::warn!("Failed to load amd fan services pid list. {:?}", e);
                 }
             }
-        } else {
-            self.reload_pid_list_delay -= 1;
+        }
+    }
+}
+
+pub enum SocketState<Content> {
+    NotAvailable,
+    Connected(Content),
+}
+
+impl<C> SocketState<C> {
+    pub fn connected(&self) -> Option<&C> {
+        match self {
+            Self::Connected(c) => Some(c),
+            _ => None,
         }
     }
 }

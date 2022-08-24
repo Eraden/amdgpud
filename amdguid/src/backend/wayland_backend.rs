@@ -24,7 +24,7 @@ use vulkano::{swapchain, sync};
 use vulkano_win::VkSurfaceBuild;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::{Fullscreen, Window, WindowBuilder};
+use winit::window::{Window, WindowBuilder};
 
 use crate::app::AmdGui;
 use crate::backend::create_ui;
@@ -66,14 +66,19 @@ impl<F: GpuFuture> AsMut<dyn GpuFuture> for FrameEndFuture<F> {
 pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, _receiver: UnboundedReceiver<bool>) {
     let required_extensions = vulkano_win::required_extensions();
     let instance = Instance::new(InstanceCreateInfo {
+        application_name: Some("amdguid".into()),
         enabled_extensions: required_extensions,
         ..Default::default()
     })
     .unwrap();
 
-    let physical = PhysicalDevice::enumerate(&instance).next().unwrap();
+    let physical = {
+        let mut v = PhysicalDevice::enumerate(&instance).collect::<Vec<_>>();
+        v.sort_by(|a, b| a.api_version().cmp(&b.api_version()));
+        v.remove(0)
+    };
 
-    println!(
+    tracing::info!(
         "Using device: {} (type: {:?})",
         physical.properties().device_name,
         physical.properties().device_type,
@@ -82,7 +87,7 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, _receiver: UnboundedReceiver<bool>) 
     let event_loop = EventLoop::new();
     let surface = WindowBuilder::new()
         .with_title("AMD GUID")
-        .with_fullscreen(Some(Fullscreen::Borderless(None)))
+        // .with_fullscreen(Some(Fullscreen::Borderless(None)))
         .build_vk_surface(&event_loop, instance.clone())
         .unwrap();
 

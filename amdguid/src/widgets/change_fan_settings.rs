@@ -158,7 +158,7 @@ impl ChangeFanSettings {
         let c: &amdgpu_config::fan::Config = &*config;
         let content = match toml::to_string(c) {
             Err(e) => {
-                log::error!("Config file serialization failed. {:?}", e);
+                tracing::error!("Config file serialization failed. {:?}", e);
                 return;
             }
             Ok(content) => content,

@@ -12,6 +12,7 @@ fn parse_output(entry: DirEntry) -> Option<Output> {
     if ty.is_dir() {
         return None;
     }
+    tracing::error!("{:?}", entry.path());
     let file_name = entry.file_name();
     let path = file_name.to_str()?;
     let mut it = path
@@ -33,11 +34,20 @@ fn parse_output(entry: DirEntry) -> Option<Output> {
 
     let card = it.next()?.strip_prefix("card")?.to_string();
     let port_type = it.next()?;
+    let dpms = std::fs::read_to_string(entry.path().join("dpms"))
+        .unwrap_or_else(|e| {
+            tracing::error!("{}", e);
+            "Off".into()
+        })
+        .to_lowercase();
+    tracing::info!("Display Power Management System is {:?}", dpms);
+
     let mut output = Output {
         card,
         ty: OutputType::parse_str(&port_type),
         port_type,
         modes,
+        display_power_managment: dpms.trim() == "on",
         ..Default::default()
     };
     let mut it = it.rev();
@@ -90,7 +100,7 @@ async fn service(state: Arc<Mutex<Vec<Output>>>) {
             .expect("Creating pid file for ports failed")
     };
     if let Err(e) = std::fs::set_permissions(&sock_path, Permissions::from_mode(0o777)) {
-        log::error!("Failed to change gui helper socket file mode. {:?}", e);
+        tracing::error!("Failed to change gui helper socket file mode. {:?}", e);
     }
 
     while let Ok((stream, _addr)) = listener.accept() {
@@ -106,11 +116,11 @@ fn handle_connection(stream: UnixStream, state: Arc<Mutex<Vec<Output>>>) {
         _ => return service.kill(),
     };
 
-    log::info!("Incoming {:?}", command);
+    tracing::info!("Incoming {:?}", command);
     let cmd = match ron::from_str::<Command>(command.trim()) {
         Ok(cmd) => cmd,
         Err(e) => {
-            log::warn!("Invalid message {:?}. {:?}", command, e);
+            tracing::warn!("Invalid message {:?}. {:?}", command, e);
             return service.kill();
         }
     };
@@ -128,6 +138,8 @@ fn handle_command(mut service: Service, cmd: Command, state: Arc<Mutex<Vec<Outpu
 }
 
 fn main() {
+    tracing_subscriber::fmt::init();
+
     let executor = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()

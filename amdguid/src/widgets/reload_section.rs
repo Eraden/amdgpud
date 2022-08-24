@@ -23,11 +23,11 @@ impl<'l> egui::Widget for ReloadSection<'l> {
                         }) {
                             Ok(response) => {
                                 service.reload = ChangeState::Success;
-                                log::info!("{:?}", response)
+                                tracing::info!("{:?}", response)
                             }
                             Err(e) => {
                                 service.reload = ChangeState::Failure(format!("{:?}", e));
-                                log::error!("Failed to reload config. {:?}", e)
+                                tracing::error!("Failed to reload config. {:?}", e)
                             }
                         }
                     }

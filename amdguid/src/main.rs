@@ -16,7 +16,7 @@ async fn main() {
     if std::env::var("RUST_LOG").is_err() {
         std::env::set_var("RUST_LOG", "DEBUG");
     }
-    pretty_env_logger::init();
+    tracing_subscriber::fmt::init();
     let config = Arc::new(Mutex::new(
         amdgpu_config::fan::load_config(amdgpu_config::fan::DEFAULT_FAN_CONFIG_PATH)
             .expect("No FAN config"),
@@ -35,7 +35,7 @@ fn schedule_tick(amd_gui: std::sync::Arc<parking_lot::Mutex<AmdGui>>) -> Unbound
         loop {
             amd_gui.lock().tick();
             if let Err(e) = sender.send(true) {
-                log::error!("Failed to propagate tick update. {:?}", e);
+                tracing::error!("Failed to propagate tick update. {:?}", e);
             }
             tokio::time::sleep(tokio::time::Duration::from_millis(166)).await;
         }

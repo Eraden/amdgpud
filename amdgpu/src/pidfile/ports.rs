@@ -127,6 +127,7 @@ impl OutputType {
         Some(match s {
             "DP" => Self::DisplayPort,
             "eDP" => Self::MiniDisplayPort,
+            "DVI" => Self::Dvi,
             "HDMI" => Self::Hdmi,
             _ => return None,
         })
@@ -174,6 +175,7 @@ pub struct Output {
     pub status: Status,
     #[serde(rename = "M")]
     pub modes: Vec<OutputMode>,
+    pub display_power_managment: bool,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
