@@ -59,24 +59,19 @@ impl OutputsSettings {
                 .monospace(),
             ));
             ui.label("Display Power Management");
-            if ui
-                .button(WidgetText::RichText(
-                    RichText::new(match output.display_power_managment {
-                        true => "On",
-                        false => "Off",
-                    })
-                    .color(match output.display_power_managment {
-                        true => Color32::GREEN,
-                        false => Color32::GRAY,
-                    })
-                    .monospace()
-                    .code()
-                    .strong(),
-                ))
-                .clicked()
-            {
-                //
-            }
+            ui.label(WidgetText::RichText(
+                RichText::new(match output.display_power_managment {
+                    true => "On",
+                    false => "Off",
+                })
+                .color(match output.display_power_managment {
+                    true => Color32::GREEN,
+                    false => Color32::GRAY,
+                })
+                .monospace()
+                .code()
+                .strong(),
+            ));
         });
     }
 }
