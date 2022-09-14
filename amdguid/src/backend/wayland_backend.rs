@@ -74,7 +74,7 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, _receiver: UnboundedReceiver<bool>) 
 
     let physical = {
         let mut v = PhysicalDevice::enumerate(&instance).collect::<Vec<_>>();
-        v.sort_by(|a, b| a.api_version().cmp(&b.api_version()));
+        v.sort_by_key(|a| a.api_version());
         v.remove(0)
     };
 

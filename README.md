@@ -118,11 +118,26 @@ cd /opt/amdguid
 
 #### SystemD files
 
-Depends
+Depends on what you actually need select which application you are using you need to copy service file to systemd directory.
+
+* For `amdfand` you need `amdfand.service`
+* For `amdmond` you need `amdmond.service`
+* For `amdguid` which will use `amdfand` you need `amdfand.service` and `amdgui-helper.service`  
+* For `amdguid` which will use `amdmond` you need `amdmond.service`  
+
+You need `amdgui-helper.service` because GUI client does not have `root` privileges, so it can't write new config file, and it can't check if process is still alive.
 
 ```
 # cp ./services/amdmond.service /usr/lib/systemd/system/amdmond.service
 # cp ./services/amdvold.service /usr/lib/systemd/system/amdvold.service
 # cp ./services/amdgui-helper.service /usr/lib/systemd/system/amdgui-helper.service
 # cp ./services/amdfand.service /usr/lib/systemd/system/amdfand.service
+```
+
+After you copied service files you need to activate services
+
+```
+# systemctl enable --now amdmond
+# systemctl enable --now amdfand
+# systemctl enable --now amdgui-helper
 ```
