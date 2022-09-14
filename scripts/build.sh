@@ -1,5 +1,7 @@
 #!/usr/bin/env zsh
 
+BUILD_TYPE="$1"
+
 set -e +x
 
 ROOT="$(git rev-parse --show-toplevel)"
@@ -33,6 +35,16 @@ function build_and_zip() {
   cd ${ROOT}
 }
 
-build_and_zip xorg-glium amdguid-glium
-build_and_zip xorg-glow amdguid-glow
-build_and_zip wayland amdguid-wayland
+if [[ "$BUILD_TYPE" == 'local' ]];
+then
+  if [[ "$WAYLAND_DISPLAY" == "" ]];
+  then
+    build_and_zip xorg-glow amdguid-glow
+  else
+    build_and_zip wayland amdguid-wayland
+  fi
+else
+  build_and_zip xorg-glium amdguid-glium
+  build_and_zip xorg-glow amdguid-glow
+  build_and_zip wayland amdguid-wayland
+fi

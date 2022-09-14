@@ -1,0 +1,16 @@
+[package]
+name = "amd-edit"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+amdmond-lib = { version = "1.0", path = "../amdmond-lib" }
+amdgpu = { version = "1.0", path = "../amdgpu" }
+amdgpu-config = { version = "1.0", path = "../amdgpu-config", features = ["fan"] }
+crossterm = { version = "0.25.0" }
+tui = { version = "0.19.0", features = ["crossterm"] }
+serde = { version = "1.0.144" }
+serde_json = { version = "1.0.85" }
+gumdrop = { version = "0.8.1" }
+tracing = { version = "0.1.36" }
+tracing-subscriber = { version = "0.3.15", features = ['env-filter'] }

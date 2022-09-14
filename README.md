@@ -55,7 +55,7 @@ Or you can compile it from source
 #### Compile
 
 ```bash
-./scripts/build.sh
+./scripts/build.sh local
 ```
 
 #### Download missing shared libraries
@@ -110,4 +110,19 @@ Where:
 
 cd /opt/amdguid
 ./amdguid
+```
+
+### Architecture
+
+![Architecture SVG](./assets/architecture.svg)
+
+#### SystemD files
+
+Depends
+
+```
+# cp ./services/amdmond.service /usr/lib/systemd/system/amdmond.service
+# cp ./services/amdvold.service /usr/lib/systemd/system/amdvold.service
+# cp ./services/amdgui-helper.service /usr/lib/systemd/system/amdgui-helper.service
+# cp ./services/amdfand.service /usr/lib/systemd/system/amdfand.service
 ```

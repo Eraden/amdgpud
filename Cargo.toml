@@ -10,4 +10,5 @@ members = [
     "amdguid",
     "amdgui-helper",
     "amdportsd",
+    "amd-edit",
 ]

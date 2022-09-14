@@ -1,0 +1,47 @@
+digraph {
+  compound = true;
+
+  amdvold [ shape=square ];
+  "amdgui-helper" [ shape=square ];
+
+  subgraph SystemD {
+    label = "SystemD";
+
+    systemd [ shape=square ];
+
+    subgraph {
+      rank = same;
+
+      amdfand [ shape=square ];
+      amdmond [ shape=square ];
+      amdportsd [ shape=square ];
+    }
+  }
+
+  subgraph binaries {
+    label = "amdguid";
+
+    amdguid -> "amdgui-helper";
+    "amdfand config file" -> { amdguid, amdfand };
+    "amdgui-helper" -> { "amdfand config file", amdfand };
+    amdmond -> amdguid;
+    amdportsd -> amdguid;
+  }
+
+  subgraph services {
+    "/usr/lib/systemd/system/amdmond.service" [ shape = box ];
+    "/usr/lib/systemd/system/amdvold.service" [ shape = box ];
+    "/usr/lib/systemd/system/amdgui-helper.service" [ shape = box ];
+    "/usr/lib/systemd/system/amdfand.service" [ shape = box ];
+
+    subgraph {
+
+      systemd -> { "/usr/lib/systemd/system/amdmond.service", "/usr/lib/systemd/system/amdvold.service", "/usr/lib/systemd/system/amdgui-helper.service", "/usr/lib/systemd/system/amdfand.service" };
+
+      "/usr/lib/systemd/system/amdmond.service" -> amdmond;
+      "/usr/lib/systemd/system/amdvold.service" -> amdvold;
+      "/usr/lib/systemd/system/amdgui-helper.service" -> "amdgui-helper";
+      "/usr/lib/systemd/system/amdfand.service" -> amdfand;
+    }
+  }
+}
