@@ -31,8 +31,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install upx-ucl xcb libxcb-shape0 libxcb-xfixes0 libxcb-record0 libxcb-shape0-dev libxcb-xfixes0-dev libxcb-record0-dev cmake
       - name: Add nightly
         run: rustup default nightly
-      - name: Add target
-        run: rustup target install x86_64-unknown-linux-musl
+      - name: Add targets
+        run: rustup target install x86_64-unknown-linux-musl && rustup target install x86_64-unknown-linux-gnu
       - name: Run fmt check
         run: cargo fmt -- --check
       - name: Run tests
