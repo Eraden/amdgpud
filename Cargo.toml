@@ -1,13 +1,17 @@
 [workspace]
 members = [
-    "amdgpu",
-    "amdgpu-config",
-    "amdfan",
-    "amdfand",
-    "amdvold",
-    "amdmond",
-    "amdmond-lib",
-    "amdguid",
-    "amdgui-helper",
-    "amdportsd",
+    "crates/amdgpu",
+    "crates/amdgpu-config",
+    "crates/amdfan",
+    "crates/amdfand",
+    "crates/amdvold",
+    "crates/amdmond",
+    "crates/amdmond-lib",
+    "crates/amdgui",
+    "crates/amdguid-glow",
+    "crates/amdguid-glium",
+    "crates/amdguid-wayland",
+    "crates/amdgui-helper",
+    "crates/amdportsd",
 ]
+resolver = "2"

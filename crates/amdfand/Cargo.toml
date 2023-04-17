@@ -1,0 +1,35 @@
+[package]
+name = "amdfand"
+version = "1.0.14"
+edition = "2018"
+description = "AMDGPU fan control service"
+license = "MIT OR Apache-2.0"
+keywords = ["hardware", "amdgpu"]
+categories = ["hardware-support"]
+repository = "https://github.com/Eraden/amdgpud"
+authors = ['Adrian Woźniak <adrian.wozniak@ita-prog.pl>']
+homepage = 'https://github.com/Eraden/amdgpud'
+
+[package.metadata]
+target = "x86_64-unknown-linux-musl"
+
+[[bin]]
+name = "amdfand"
+path = "./src/main.rs"
+
+[dependencies]
+amdgpu = { path = "../amdgpu", version = "1.0.11", features = ["gui-helper"] }
+amdgpu-config = { path = "../amdgpu-config", version = "1.0.10", features = ["fan"] }
+gumdrop = { version = "0.8" }
+ron = { version = "0.1" }
+serde = { version = "1.0", features = ["derive"] }
+toml = { version = "0.5" }
+tracing = { version = "0.1.37" }
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+onlyerror = { version = "0" }
+eyra = { version = "0" }
+
+[dev-dependencies]
+amdgpu = { path = "../amdgpu", version = "1.0" }
+amdgpu-config = { path = "../amdgpu-config", version = "1.0", features = ["fan"] }
+tempdir = { version = "*" }

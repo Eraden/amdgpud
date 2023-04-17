@@ -1,0 +1,31 @@
+[package]
+name = "amdgpu-config"
+version = "1.0.10"
+edition = "2021"
+description = "Subcomponent of AMDGPU tools"
+license = "MIT OR Apache-2.0"
+keywords = ["hardware", "amdgpu"]
+categories = ["hardware-support"]
+repository = "https://github.com/Eraden/amdgpud"
+
+[lib]
+name = "amdgpu_config"
+path = "./src/lib.rs"
+
+[features]
+fan = []
+voltage = []
+monitor = []
+gui = []
+
+[dependencies]
+amdgpu = { path = "../amdgpu", version = "1.0.11", features = ["gui-helper"] }
+csv = { version = "1.1" }
+gumdrop = { version = "0.8" }
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "1.0"
+toml = { version = "0.5" }
+tracing = "0.1.37"
+
+[dev-dependencies]
+amdgpu = { path = "../amdgpu", version = "1.0", features = ["gui-helper"] }
