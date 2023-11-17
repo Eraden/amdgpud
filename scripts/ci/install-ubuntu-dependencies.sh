@@ -5,7 +5,7 @@ ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
 apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
 dpkg-reconfigure --frontend noninteractive tzdata
-apt-get install --yes curl gnupg clang gcc cmake build-essential git python3 zip tar wget
+apt-get install --yes curl gnupg clang gcc cmake build-essential git python3 zip tar wget jq
 cp /usr/bin/clang /usr/bin/cc
 cp /usr/bin/python3 /usr/bin/python
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/install-rustup
