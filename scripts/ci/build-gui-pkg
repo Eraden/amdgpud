@@ -6,7 +6,7 @@ IMAGE=$1
 VERSION=$2
 APP_NAME=$3
 
-APP_VERSION=$(grep -E '^version = ' crates/${APP_NAME}/Cargo.toml | sed 's/version = //' | sed 's/\"//g')
+APP_VERSION=$(grep -m 1 -E '^version = ' crates/${APP_NAME}/Cargo.toml | sed 's/version = //' | sed 's/\"//g')
 
 zip build/${APP_NAME}-${IMAGE}-${VERSION}-${APP_VERSION}.zip \
     target/release/${APP_NAME} \
