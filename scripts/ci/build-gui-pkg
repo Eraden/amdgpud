@@ -7,7 +7,7 @@ VERSION=$2
 APP_NAME=$3
 
 # APP_VERSION=$(grep -m 1 -E '^version = ' crates/${APP_NAME}/Cargo.toml | sed 's/version = //' | sed 's/\"//g')
-APP_VERSION=$(cargo metadata --format-version 1 | jq ".packages | map(select(.name == \"$(APP_NAME)\")) | .[0].version")
+APP_VERSION=$(cargo metadata --format-version 1 | jq ".packages | map(select(.name == \"${APP_NAME}\")) | .[0].version")
 
 zip build/${APP_NAME}-${IMAGE}-${VERSION}-${APP_VERSION}.zip \
     target/release/${APP_NAME} \
