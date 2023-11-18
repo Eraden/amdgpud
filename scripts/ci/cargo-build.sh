@@ -17,6 +17,8 @@ rustup update
 # export AWS_PROFILE=minio
 unset RUSTC_WRAPPER
 
+cargo metadata --format-version 1 --no-deps | jq -S -M -c ".packages | map({ version: .version, name: .name })" > metadata.json
+
 cargo build --release --bin amdmond
 cargo build --release --bin amdfand
 cargo build --release --bin amdports
