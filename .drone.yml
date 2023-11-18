@@ -1,0 +1,274 @@
+kind: pipeline
+name: ubuntu_18
+steps:
+- image: meltwater/drone-cache:dev
+  name: restore-cache
+  pull: true
+  settings:
+    access-key:
+      from_secret: access_key
+    bucket: drone-cache
+    debug: true
+    mount:
+    - target
+    path-style: true
+    region: eu-west-1
+    restore: true
+    secret-key:
+      from_secret: secret_access
+- commands:
+  - VERSION=18 ./scripts/ci/install-ubuntu-dependencies.sh
+  - ./scripts/ci/cargo-test.sh
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: access_key
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: secret_access
+    SCCACHE_BUCKET: archlinux-cache
+    SCCACHE_ENDPOINT: https://minio.ita-prog.pl
+  image: ubuntu:18.04
+  name: test
+- commands:
+  - VERSION=18 ./scripts/ci/install-ubuntu-dependencies.sh
+  - mkdir -p build
+  - ./scripts/ci/cargo-build.sh ubuntu 18
+  - bash scripts/ci/build-gui-pkg ubuntu 18 amdguid-glium
+  - bash scripts/ci/build-gui-pkg ubuntu 18 amdguid-glow
+  - bash scripts/ci/build-gui-pkg ubuntu 18 amdguid-wayland
+  - bash scripts/ci/build-daemon-pkg ubuntu 18 amdmond
+  - bash scripts/ci/build-daemon-pkg ubuntu 18 amdvold
+  - bash scripts/ci/build-daemon-pkg ubuntu 18 amdfand
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: access_key
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: secret_access
+    SCCACHE_BUCKET: archlinux-cache
+    SCCACHE_ENDPOINT: https://minio.ita-prog.pl
+  image: ubuntu:18.04
+  name: build
+- image: meltwater/drone-cache:dev
+  name: rebuild-cache
+  pull: true
+  settings:
+    access-key:
+      from_secret: access_key
+    bucket: drone-cache
+    debug: true
+    mount:
+    - target
+    path-style: true
+    rebuild: true
+    region: eu-west-1
+    secret-key:
+      from_secret: secret_access
+- environment:
+    ACCESS:
+      from_secret: access_key
+    SECRET:
+      from_secret: secret_key
+  image: plugins/s3
+  name: upload
+  settings:
+    access_key:
+      from_secret: access_key
+    bucket: build
+    debug: true
+    endpoint: https://minio.ita-prog.pl
+    path_style: true
+    secret_key:
+      from_secret: secret_key
+    source: build/*
+    target: /ubuntu-18
+- image: plugins/github-release
+  name: github-release
+  settings:
+    api_key:
+      from_secret: gh_secret_key
+    files: build/*
+  when:
+    event: tag
+---
+kind: pipeline
+name: ubuntu_20
+steps:
+- image: meltwater/drone-cache:dev
+  name: restore-cache
+  pull: true
+  settings:
+    access-key:
+      from_secret: access_key
+    bucket: drone-cache
+    debug: true
+    mount:
+    - target
+    path-style: true
+    region: eu-west-1
+    restore: true
+    secret-key:
+      from_secret: secret_access
+- commands:
+  - VERSION=20 ./scripts/ci/install-ubuntu-dependencies.sh
+  - ./scripts/ci/cargo-test.sh
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: access_key
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: secret_access
+    SCCACHE_BUCKET: archlinux-cache
+    SCCACHE_ENDPOINT: https://minio.ita-prog.pl
+  image: ubuntu:20.04
+  name: test
+- commands:
+  - VERSION=20 ./scripts/ci/install-ubuntu-dependencies.sh
+  - mkdir -p build
+  - ./scripts/ci/cargo-build.sh ubuntu 20
+  - bash scripts/ci/build-gui-pkg ubuntu 20 amdguid-glium
+  - bash scripts/ci/build-gui-pkg ubuntu 20 amdguid-glow
+  - bash scripts/ci/build-gui-pkg ubuntu 20 amdguid-wayland
+  - bash scripts/ci/build-daemon-pkg ubuntu 20 amdmond
+  - bash scripts/ci/build-daemon-pkg ubuntu 20 amdvold
+  - bash scripts/ci/build-daemon-pkg ubuntu 20 amdfand
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: access_key
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: secret_access
+    SCCACHE_BUCKET: archlinux-cache
+    SCCACHE_ENDPOINT: https://minio.ita-prog.pl
+  image: ubuntu:20.04
+  name: build
+- image: meltwater/drone-cache:dev
+  name: rebuild-cache
+  pull: true
+  settings:
+    access-key:
+      from_secret: access_key
+    bucket: drone-cache
+    debug: true
+    mount:
+    - target
+    path-style: true
+    rebuild: true
+    region: eu-west-1
+    secret-key:
+      from_secret: secret_access
+- environment:
+    ACCESS:
+      from_secret: access_key
+    SECRET:
+      from_secret: secret_key
+  image: plugins/s3
+  name: upload
+  settings:
+    access_key:
+      from_secret: access_key
+    bucket: build
+    debug: true
+    endpoint: https://minio.ita-prog.pl
+    path_style: true
+    secret_key:
+      from_secret: secret_key
+    source: build/*
+    target: /ubuntu-20
+- image: plugins/github-release
+  name: github-release
+  settings:
+    api_key:
+      from_secret: gh_secret_key
+    files: build/*
+  when:
+    event: tag
+---
+kind: pipeline
+name: archlinux
+steps:
+- image: meltwater/drone-cache:dev
+  name: restore-cache
+  pull: true
+  settings:
+    access-key:
+      from_secret: access_key
+    bucket: drone-cache
+    debug: true
+    mount:
+    - target
+    path-style: true
+    region: eu-west-1
+    restore: true
+    secret-key:
+      from_secret: secret_access
+- commands:
+  - bash ./scripts/ci/install-archlinux-dependencies.sh
+  - rustup default nightly
+  - ./scripts/ci/cargo-test.sh
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: access_key
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: secret_access
+    SCCACHE_BUCKET: archlinux-cache
+    SCCACHE_ENDPOINT: https://minio.ita-prog.pl
+  image: archlinux:latest
+  name: test
+- commands:
+  - bash ./scripts/ci/install-archlinux-dependencies.sh
+  - rustup default nightly
+  - mkdir -p build
+  - ./scripts/ci/cargo-build.sh archlinux latest
+  - bash scripts/ci/build-gui-pkg archlinux latest amdguid-glium
+  - bash scripts/ci/build-gui-pkg archlinux latest amdguid-glow
+  - bash scripts/ci/build-gui-pkg archlinux latest amdguid-wayland
+  - bash scripts/ci/build-daemon-pkg archlinux latest amdmond
+  - bash scripts/ci/build-daemon-pkg archlinux latest amdvold
+  - bash scripts/ci/build-daemon-pkg archlinux latest amdfand
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: access_key
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: secret_access
+    SCCACHE_BUCKET: archlinux-cache
+    SCCACHE_ENDPOINT: https://minio.ita-prog.pl
+  image: archlinux:latest
+  name: build
+- image: meltwater/drone-cache:dev
+  name: rebuild-cache
+  pull: true
+  settings:
+    access-key:
+      from_secret: access_key
+    bucket: drone-cache
+    debug: true
+    mount:
+    - target
+    path-style: true
+    rebuild: true
+    region: eu-west-1
+    secret-key:
+      from_secret: secret_access
+- environment:
+    ACCESS:
+      from_secret: access_key
+    SECRET:
+      from_secret: secret_key
+  image: plugins/s3
+  name: upload
+  settings:
+    access_key:
+      from_secret: access_key
+    bucket: build
+    debug: true
+    endpoint: https://minio.ita-prog.pl
+    path_style: true
+    secret_key:
+      from_secret: secret_key
+    source: build/*
+    target: /archlinux
+- image: plugins/github-release
+  name: github-release
+  settings:
+    api_key:
+      from_secret: gh_secret_key
+    files: build/*
+  when:
+    event: tag

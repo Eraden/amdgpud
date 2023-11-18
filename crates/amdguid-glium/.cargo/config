@@ -1,0 +1,7 @@
+[build]
+target = "x86_64-unknown-linux-gnu"
+
+[profile.release]
+lto = true
+panic = "abort"
+codegen-units = 1

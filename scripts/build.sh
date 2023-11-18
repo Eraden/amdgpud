@@ -1,5 +1,7 @@
 #!/usr/bin/env zsh
 
+rustup default nightly
+
 set -e +x
 
 ROOT="$(git rev-parse --show-toplevel)"
@@ -7,7 +9,7 @@ ROOT="$(git rev-parse --show-toplevel)"
 cd ${ROOT}
 
 rm -Rf ${ROOT}/tmp
-mkdir ${ROOT}/tmp
+mkdir -p ${ROOT}/tmp
 
 ./scripts/compile.sh
 
@@ -15,24 +17,19 @@ strip target/x86_64-unknown-linux-musl/release/amdfand
 strip target/x86_64-unknown-linux-musl/release/amdvold
 strip target/x86_64-unknown-linux-musl/release/amdmond
 
-#upx --best --lzma target/x86_64-unknown-linux-musl/release/amdfand
-#upx --best --lzma target/x86_64-unknown-linux-musl/release/amdvold
-#upx --best --lzma target/x86_64-unknown-linux-musl/release/amdmond
-
-function build_and_zip() {
-  feature=$1
-  zip_name=$2
+function build() {
+  zip_name=$1
 
   cd ${ROOT}
-  cargo build --release --target x86_64-unknown-linux-gnu --bin amdguid --no-default-features --features ${feature}
-  strip target/x86_64-unknown-linux-gnu/release/amdguid
-  #upx --best --lzma target/x86_64-unknown-linux-gnu/release/amdguid
-  cp ./target/x86_64-unknown-linux-gnu/release/amdguid ./tmp
+
+  strip target/x86_64-unknown-linux-gnu/release/$zip_name
+  cp ./target/x86_64-unknown-linux-gnu/release/$zip_name ./tmp/amdguid
+
   cd ${ROOT}/tmp
   zip ${zip_name}.zip ./amdguid
   cd ${ROOT}
 }
 
-build_and_zip xorg-glium amdguid-glium
-build_and_zip xorg-glow amdguid-glow
-build_and_zip wayland amdguid-wayland
+build amdguid-glium
+build amdguid-glow
+build amdguid-wayland

@@ -21,7 +21,7 @@ For more information please check README each of them.
 * [X] Add support for multiple cards
     * Multiple services must recognize card even if there's multiple same version cards is installed
     * Support should be by using `--config` option
-* [ ] CLI for fan config edit
+* [X] CLI for fan config edit
 * [ ] CLI for voltage edit
 * [X] GUI application using native Rust framework (ex. egui, druid)
 
