@@ -1,6 +1,6 @@
 [package]
 name = "amdmond-lib"
-version = "1.0.10"
+version = "1.0.11"
 edition = "2021"
 description = "AMD GPU monitoring tool for Linux"
 license = "MIT OR Apache-2.0"

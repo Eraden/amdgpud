@@ -88,7 +88,7 @@ dependencies = [
 
 [[package]]
 name = "amdgpu"
-version = "1.0.11"
+version = "1.0.12"
 dependencies = [
  "egui-winit",
  "gumdrop",
@@ -103,7 +103,7 @@ dependencies = [
 
 [[package]]
 name = "amdgpu-config"
-version = "1.0.10"
+version = "1.0.11"
 dependencies = [
  "amdgpu",
  "csv",
@@ -252,7 +252,7 @@ dependencies = [
 
 [[package]]
 name = "amdmond-lib"
-version = "1.0.10"
+version = "1.0.11"
 dependencies = [
  "amdgpu",
  "amdgpu-config",
@@ -281,7 +281,7 @@ dependencies = [
 
 [[package]]
 name = "amdvold"
-version = "1.0.10"
+version = "1.0.11"
 dependencies = [
  "amdgpu",
  "amdgpu-config",

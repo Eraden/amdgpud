@@ -15,6 +15,7 @@ mod error;
 mod panic_handler;
 mod service;
 
+#[cfg(feature = "static")]
 extern crate eyra;
 
 pub type Result<T> = std::result::Result<T, AmdFanError>;

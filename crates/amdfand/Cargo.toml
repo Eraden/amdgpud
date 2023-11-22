@@ -13,6 +13,9 @@ homepage = 'https://github.com/Eraden/amdgpud'
 [package.metadata]
 target = "x86_64-unknown-linux-musl"
 
+[features]
+static = ["eyra"]
+
 [[bin]]
 name = "amdfand"
 path = "./src/main.rs"
@@ -27,9 +30,9 @@ toml = { version = "0.5" }
 tracing = { version = "0.1.37" }
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 onlyerror = { version = "0" }
-eyra = { version = "0" }
+eyra = { version = "0", optional = true }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0" }
 amdgpu-config = { path = "../amdgpu-config", version = "1.0", features = ["fan"] }
-tempdir = { version = "*" }
+tempdir = "0.3.7"
