@@ -1,6 +1,6 @@
 [package]
 name = "amdgpu"
-version = "1.0.11"
+version = "1.0.12"
 edition = "2018"
 description = "Subcomponent of AMDGPU fan control service"
 license = "MIT OR Apache-2.0"
