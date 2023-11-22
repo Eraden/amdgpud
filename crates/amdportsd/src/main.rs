@@ -8,6 +8,7 @@ use amdgpu::pidfile::ports::{sock_file, Command, Response, *};
 use amdgpu::IoFailure;
 use tracing_subscriber::EnvFilter;
 
+#[cfg(feature = "static")]
 extern crate eyra;
 
 fn parse_output(entry: DirEntry) -> Option<Output> {

@@ -12,6 +12,8 @@
 //! communication. After each operation connection is terminated so each command
 //! needs new connection.
 #![allow(clippy::non_octal_unix_permissions)]
+
+#[cfg(feature = "static")]
 extern crate eyra;
 
 use std::ffi::OsStr;
