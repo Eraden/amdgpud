@@ -9,6 +9,8 @@ use tracing::level_filters::LevelFilter;
 use tracing_subscriber::EnvFilter;
 
 use crate::command::Command;
+
+#[cfg(feature = "static")]
 extern crate eyra;
 
 #[derive(gumdrop::Options)]

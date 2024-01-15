@@ -17,6 +17,9 @@ target = "x86_64-unknown-linux-musl"
 name = "amdgui-helper"
 path = "./src/main.rs"
 
+[features]
+static = ["eyra"]
+
 [dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0.9", features = ["gui-helper"] }
 amdgpu-config = { path = "../amdgpu-config", version = "1.0.9", features = ["fan", "gui"] }
@@ -25,7 +28,7 @@ gumdrop = { version = "0.8" }
 nix = { version = "0.23" }
 ron = { version = "0.7" }
 serde = { version = "1.0", features = ["derive"] }
-eyra = { version = "0.16.3" }
+eyra = { version = "0.16.3", optional = true }
 sudo = { version = "0.6" }
 thiserror = { version = "1.0" }
 toml = { version = "0.5" }
