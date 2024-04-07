@@ -22,10 +22,10 @@ static = ["eyra"]
 
 [dependencies]
 amdgpu = { path = "../amdgpu", features = ["gui-helper"], version = "1" }
+eyra = { workspace = true, optional = true }
 futures = { workspace = true, features = [] }
 ron = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-eyra = { workspace = true, optional = true }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }

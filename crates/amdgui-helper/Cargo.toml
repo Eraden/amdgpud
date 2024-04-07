@@ -24,11 +24,11 @@ static = ["eyra"]
 amdgpu = { path = "../amdgpu", version = "1.0.9", features = ["gui-helper"] }
 amdgpu-config = { path = "../amdgpu-config", version = "1.0.9", features = ["fan", "gui"] }
 amdmond-lib = { path = "../amdmond-lib", version = "1.0.9" }
+eyra = { workspace = true, optional = true }
 gumdrop = { workspace = true }
 nix = { workspace = true }
 ron = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-eyra = { workspace = true, optional = true }
 sudo = { workspace = true }
 thiserror = { workspace = true }
 toml = { workspace = true }

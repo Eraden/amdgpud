@@ -23,14 +23,14 @@ path = "./src/main.rs"
 [dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0.11", features = ["gui-helper"] }
 amdgpu-config = { path = "../amdgpu-config", version = "1.0.10", features = ["fan"] }
+eyra = { workspace = true, optional = true }
 gumdrop = { workspace = true }
+onlyerror = { workspace = true }
 ron = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 toml = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
-onlyerror = { workspace = true }
-eyra = { workspace = true, optional = true }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0" }

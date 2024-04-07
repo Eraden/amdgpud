@@ -18,15 +18,15 @@ name = "agc"
 path = "./src/main.rs"
 
 [dependencies]
-amdguid = { path = "../amdgui", version = "1" }
 amdgpu = { path = "../amdgpu", version = "1", features = ["gui-helper"] }
 amdgpu-config = { path = "../amdgpu-config", version = "1", features = ["fan", "gui"] }
+amdguid = { path = "../amdgui", version = "1" }
 amdmond-lib = { path = "../amdmond-lib", version = "1" }
 bytemuck = { workspace = true }
+eframe = { workspace = true }
 egui = { workspace = true }
 egui-winit = { workspace = true }
 emath = { workspace = true }
-eframe = { workspace = true }
 gumdrop = { workspace = true }
 nix = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
