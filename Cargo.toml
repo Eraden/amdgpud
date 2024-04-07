@@ -8,10 +8,20 @@ members = [
     "crates/amdmond",
     "crates/amdmond-lib",
     "crates/amdgui",
-    "crates/amdguid-glow",
-    "crates/amdguid-glium",
-    "crates/amdguid-wayland",
+    # "crates/amdguid-glow",
+    # "crates/amdguid-glium",
+    # "crates/amdguid-wayland",
+    "crates/amdguid-client",
     "crates/amdgui-helper",
     "crates/amdportsd",
 ]
 resolver = "2"
+
+[workspace.dependencies]
+egui = { version = "0.27.2" }
+egui_plot = { version = "0.27.2" }
+emath = { version = "0.27.2" }
+epaint = { version = "0.27.2" }
+egui-winit = { version = "0.27.2", default-features = false }
+eframe = { version = "0.27.2" }
+tracing = { version = "0" }

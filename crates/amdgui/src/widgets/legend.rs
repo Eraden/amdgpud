@@ -1,5 +1,3 @@
-use std::string::String;
-
 use egui::epaint::CircleShape;
 use egui::{
     pos2, vec2, Align, Color32, PointerButton, Rect, Response, Sense, Shape, TextStyle, WidgetInfo,
@@ -92,15 +90,17 @@ impl LegendEntry {
             hovered,
         } = self;
 
-        let galley = ui.fonts().layout_delayed_color(
-            text,
-            ui.style()
-                .text_styles
-                .get(&TextStyle::Body)
-                .unwrap()
-                .clone(),
-            f32::INFINITY,
-        );
+        let galley = ui.fonts(|reader| {
+            reader.layout_delayed_color(
+                text,
+                ui.style()
+                    .text_styles
+                    .get(&TextStyle::Body)
+                    .unwrap()
+                    .clone(),
+                f32::INFINITY,
+            )
+        });
 
         let icon_size = galley.size().y;
         let icon_spacing = icon_size / 5.0;
@@ -152,7 +152,7 @@ impl LegendEntry {
         };
 
         let text_position = pos2(text_position_x, rect.center().y - 0.5 * galley.size().y);
-        painter.galley_with_color(text_position, galley, visuals.text_color());
+        painter.galley_with_override_text_color(text_position, galley, visuals.text_color());
 
         *checked ^= response.clicked_by(PointerButton::Primary);
         *hovered = response.hovered();

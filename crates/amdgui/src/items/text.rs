@@ -84,13 +84,12 @@ impl PlotItem for Text {
         };
         let fond_id = ui.style().text_styles.get(&self.style).unwrap();
         let pos = transform.position_from_value(&self.position);
-        let galley = ui
-            .fonts()
-            .layout_no_wrap(self.text.clone(), fond_id.clone(), color);
+        let galley =
+            ui.fonts(|font| font.layout_no_wrap(self.text.clone(), fond_id.clone(), color));
         let rect = self
             .anchor
             .anchor_rect(Rect::from_min_size(pos, galley.size()));
-        shapes.push(Shape::galley(rect.min, galley));
+        shapes.push(Shape::galley(rect.min, galley, Color32::default()));
         if self.highlight {
             shapes.push(Shape::rect_stroke(
                 rect.expand(2.0),

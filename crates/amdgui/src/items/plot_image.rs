@@ -101,7 +101,7 @@ impl PlotItem for PlotImage {
             let right_bottom_tf = transform.position_from_value(&right_bottom);
             Rect::from_two_pos(left_top_tf, right_bottom_tf)
         };
-        Image::new(*texture_id, *size)
+        Image::new((*texture_id, *size))
             .bg_fill(*bg_fill)
             .tint(*tint)
             .uv(*uv)

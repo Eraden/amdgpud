@@ -12,7 +12,7 @@ repository = "https://github.com/Eraden/amdgpud"
 gui-helper = []
 
 [dependencies]
-egui-winit = { version = "0.18", default-features = false }
+egui-winit = { workspace = true }
 gumdrop = { version = "0.8" }
 nix = { version = "0.24" }
 pidlock = { version = "0.1" }

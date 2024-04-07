@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use egui::panel::TopBottomSide;
-use egui::{Layout, PointerButton};
+use egui::{Align, Layout, PointerButton};
 use parking_lot::Mutex;
 
 use crate::app::Page;
@@ -9,7 +9,10 @@ use crate::AmdGui;
 
 pub fn create_ui(amd_gui: Arc<Mutex<AmdGui>>, ctx: &egui::Context) {
     egui::containers::TopBottomPanel::new(TopBottomSide::Top, "menu").show(ctx, |ui| {
-        let mut child = ui.child_ui(ui.available_rect_before_wrap(), Layout::left_to_right());
+        let mut child = ui.child_ui(
+            ui.available_rect_before_wrap(),
+            Layout::left_to_right(Align::default()),
+        );
 
         if child
             .add(

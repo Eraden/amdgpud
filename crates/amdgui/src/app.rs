@@ -3,8 +3,8 @@ use std::sync::Arc;
 
 use amdgpu::pidfile::ports::{Output, OutputType};
 use amdgpu::pidfile::Pid;
-use egui::{ColorImage, ImageData, TextureHandle, Ui};
-use epi::Frame;
+use eframe::App;
+use egui::{ColorImage, ImageData, TextureHandle, TextureOptions, Ui};
 use image::{GenericImageView, ImageBuffer, ImageFormat};
 use parking_lot::Mutex;
 
@@ -131,7 +131,11 @@ impl StatefulConfig {
             let pixels = img.as_flat_samples();
             let id = ctx.load_texture(
                 ty.name(),
-                ImageData::Color(ColorImage::from_rgba_unmultiplied(size, pixels.as_slice())),
+                ImageData::Color(Arc::new(ColorImage::from_rgba_unmultiplied(
+                    size,
+                    pixels.as_slice(),
+                ))),
+                TextureOptions::NEAREST,
             );
             self.textures.insert(ty, id);
         }
@@ -150,12 +154,8 @@ pub struct AmdGui {
     reload_pid_list_delay: u8,
 }
 
-impl epi::App for AmdGui {
-    fn update(&mut self, _ctx: &epi::egui::Context, _frame: &Frame) {}
-
-    fn name(&self) -> &str {
-        "AMD GUI"
-    }
+impl App for AmdGui {
+    fn update(&mut self, _ctx: &egui::Context, _frame: &mut eframe::Frame) {}
 }
 
 impl AmdGui {

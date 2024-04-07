@@ -1,6 +1,6 @@
 [package]
 name = "amdguid"
-version = "1.0.12"
+version = "1.0.14"
 edition = "2018"
 description = "AMDGPU fan control service"
 license = "MIT OR Apache-2.0"
@@ -13,8 +13,10 @@ amdgpu = { path = "../amdgpu", version = "1", features = ["gui-helper"] }
 amdgpu-config = { path = "../amdgpu-config", version = "1", features = ["fan", "gui"] }
 amdmond-lib = { path = "../amdmond-lib", version = "1" }
 bytemuck = { version = "1" }
-egui = { version = "=0.18", features = [] }
-epi = { version = "0" }
+eframe = { workspace = true }
+egui = { workspace = true }
+egui_plot = { workspace = true }
+epaint = { workspace = true }
 gumdrop = { version = "0" }
 image = { version = "=0.24.0", default-features = false, features = ['png'] }
 nix = { version = "0" }

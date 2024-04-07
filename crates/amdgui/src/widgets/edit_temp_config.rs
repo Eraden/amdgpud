@@ -1,6 +1,6 @@
 use amdgpu::pidfile::helper_cmd::{send_command, Command, Response};
 use amdgpu_config::fan::TempPoint;
-use egui::{emath, pos2, Color32, Layout, PointerButton, Ui};
+use egui::{emath, pos2, Align, Color32, Layout, PointerButton, Ui};
 
 use crate::app::{ChangeState, FanConfig, FanServices, StatefulConfig};
 use crate::widgets;
@@ -41,7 +41,7 @@ impl EditTempConfig {
                     min: available.min,
                     max: pos2(available.width() / 2.0, available.height()),
                 },
-                Layout::left_to_right(),
+                Layout::left_to_right(Align::default()),
             )
             .vertical(|ui| {
                 egui::ScrollArea::vertical()
@@ -120,7 +120,7 @@ impl EditTempConfig {
                     min: pos2(available.width() / 2.0 + 20.0, available.min.y),
                     max: available.max,
                 },
-                Layout::left_to_right(),
+                Layout::left_to_right(Align::default()),
             )
             .vertical(|ui| {
                 ui.add(TempConfigFile::new(self.config.clone(), &mut self.matrix));

@@ -1,4 +1,4 @@
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryInto;
 use std::sync::Arc;
 
 use amdguid::parking_lot::Mutex;
