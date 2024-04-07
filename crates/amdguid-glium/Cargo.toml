@@ -23,12 +23,12 @@ amdgpu = { path = "../amdgpu", version = "1", features = ["gui-helper"] }
 amdgpu-config = { path = "../amdgpu-config", version = "1", features = ["fan", "gui"] }
 amdmond-lib = { path = "../amdmond-lib", version = "1" }
 bytemuck = { version = "1" }
-egui-winit = { version = "0.18", default-features = false }
-egui_glium = { version = "=0.18" }
-emath = { version = "0" }
-epaint = { version = "=0.18", features = [] }
-epi = { version = "0" }
-glium = { version = "=0.31" }
+egui-winit = { workspace = true }
+egui_glium = { version = "0.23" }
+emath = { workspace = true }
+epaint = { workspace = true }
+eframe = { workspace = true }
+glium = { version = "0" }
 glutin = { version = "0" }
 gumdrop = { version = "0" }
 nix = { version = "0" }
@@ -37,7 +37,7 @@ thiserror = { version = "1" }
 tokio = { version = "1", features = ["full"] }
 toml = { version = "0" }
 tracing = { version = "0" }
-winit = { version = "=0.26" }
+winit = { version = "0.26" }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0", features = ["gui-helper"] }

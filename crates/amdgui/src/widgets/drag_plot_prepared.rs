@@ -125,7 +125,7 @@ impl DragPlotPrepared {
                     .at_most(transform.frame().max[1 - axis] - galley.size()[1 - axis] - 2.0)
                     .at_least(transform.frame().min[1 - axis] + 1.0);
 
-                shapes.push(Shape::galley(text_pos, galley));
+                shapes.push(Shape::galley(text_pos, galley, Color32::default()));
             }
         }
 
@@ -262,18 +262,20 @@ impl DragPlotPrepared {
             }
         };
 
-        #[allow(clippy::explicit_auto_deref)]
-        shapes.push(Shape::text(
-            &*ui.fonts(),
-            pointer + vec2(3.0, -2.0),
-            Align2::LEFT_BOTTOM,
-            text,
-            ui.style()
-                .text_styles
-                .get(&TextStyle::Body)
-                .cloned()
-                .unwrap(),
-            ui.visuals().text_color(),
-        ));
+        ui.fonts(|font| {
+            #[allow(clippy::explicit_auto_deref)]
+            shapes.push(Shape::text(
+                font,
+                pointer + vec2(3.0, -2.0),
+                Align2::LEFT_BOTTOM,
+                text,
+                ui.style()
+                    .text_styles
+                    .get(&TextStyle::Body)
+                    .cloned()
+                    .unwrap(),
+                ui.visuals().text_color(),
+            ));
+        });
     }
 }

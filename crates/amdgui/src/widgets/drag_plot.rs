@@ -1,11 +1,11 @@
-use egui::color::Hsva;
 use egui::epaint::ahash::AHashSet;
-use egui::epaint::RectShape;
+use egui::epaint::{Hsva, RectShape};
 use egui::{
-    vec2, Color32, CursorIcon, Id, NumExt, PointerButton, Response, Rounding, Sense, Ui, Vec2,
+    vec2, Color32, CursorIcon, Id, NumExt, PointerButton, Rect, Response, Rounding, Sense,
+    TextureId, Ui, Vec2,
 };
 
-use crate::items::{HLine, *};
+use crate::items::*;
 use crate::transform::{Bounds, ScreenTransform};
 use crate::widgets::drag_plot_prepared::DragPlotPrepared;
 use crate::widgets::legend::Legend;
@@ -245,17 +245,17 @@ where
             axis_names,
         } = self;
         let plot_id = ui.make_persistent_id(id);
-        let memory = ui
-            .ctx()
-            .data()
-            .get_persisted_mut_or_insert_with(plot_id, || PlotMemory {
-                bounds: min_auto_bounds,
-                auto_bounds: false,
-                hovered_entry: None,
-                hidden_items: Default::default(),
-                min_auto_bounds,
-            })
-            .clone();
+        let memory = ui.ctx().data_mut(|writer| {
+            writer
+                .get_persisted_mut_or_insert_with(plot_id, || PlotMemory {
+                    bounds: min_auto_bounds,
+                    auto_bounds: false,
+                    hovered_entry: None,
+                    hidden_items: Default::default(),
+                    min_auto_bounds,
+                })
+                .clone()
+        });
 
         let PlotMemory {
             mut bounds,
@@ -297,6 +297,8 @@ where
             rounding: Rounding::from(2.0),
             fill: ui.visuals().extreme_bg_color,
             stroke: ui.visuals().widgets.noninteractive.bg_stroke,
+            fill_texture_id: TextureId::default(),
+            uv: Rect::EVERYTHING,
         });
 
         // Legend
@@ -346,16 +348,16 @@ where
         if allow_zoom {
             if let Some(hover_pos) = response.hover_pos() {
                 let zoom_factor = if data_aspect.is_some() {
-                    Vec2::splat(ui.input().zoom_delta())
+                    Vec2::splat(ui.input(|state| state.zoom_delta()))
                 } else {
-                    ui.input().zoom_delta_2d()
+                    ui.input(|state| state.zoom_delta_2d())
                 };
                 if zoom_factor != Vec2::splat(1.0) {
                     transform.zoom(zoom_factor, hover_pos);
                     auto_bounds = false;
                 }
 
-                let scroll_delta = ui.input().scroll_delta;
+                let scroll_delta = ui.input(|state| state.smooth_scroll_delta);
                 if scroll_delta != Vec2::ZERO {
                     transform.translate_bounds(-scroll_delta);
                     auto_bounds = false;
@@ -410,15 +412,15 @@ where
             hovered_entry = legend.get_hovered_entry_name();
         }
 
-        ui.ctx()
-            .data()
-            .get_persisted_mut_or_insert_with(plot_id, || PlotMemory {
+        ui.ctx().data_mut(|writer| {
+            writer.get_persisted_mut_or_insert_with(plot_id, || PlotMemory {
                 bounds: t_bounds,
                 auto_bounds,
                 hovered_entry,
                 hidden_items,
                 min_auto_bounds,
             });
+        });
         response.on_hover_cursor(CursorIcon::Crosshair)
     }
 }
@@ -429,11 +431,11 @@ pub trait PointerExt {
 
 impl PointerExt for Response {
     fn mouse_down(&self, p: PointerButton) -> bool {
-        let pointer = &self.ctx.input().pointer;
-        match p {
-            PointerButton::Primary => pointer.primary_down(),
-            PointerButton::Secondary => pointer.secondary_down(),
-            PointerButton::Middle => pointer.middle_down(),
-        }
+        self.ctx.input(|state| match p {
+            PointerButton::Primary => state.pointer.primary_down(),
+            PointerButton::Secondary => state.pointer.secondary_down(),
+            PointerButton::Middle => state.pointer.middle_down(),
+            _ => false,
+        })
     }
 }

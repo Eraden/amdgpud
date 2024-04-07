@@ -23,11 +23,11 @@ amdgpu = { path = "../amdgpu", version = "1", features = ["gui-helper"] }
 amdgpu-config = { path = "../amdgpu-config", version = "1", features = ["fan", "gui"] }
 amdmond-lib = { path = "../amdmond-lib", version = "1" }
 bytemuck = { version = "1" }
-egui-winit = { version = "0.18", default-features = false }
-egui_vulkano = { version = "0.8.0" }
-emath = { version = "0" }
-epaint = { version = "=0.18", features = [] }
-epi = { version = "0" }
+egui-winit = { workspace = true }
+# egui_vulkano = { version = "0.8" }
+emath = { workspace = true }
+epaint = { workspace = true }
+eframe = { workspace = true }
 glutin = { version = "0" }
 gumdrop = { version = "0" }
 nix = { version = "0" }
@@ -36,10 +36,10 @@ thiserror = { version = "1" }
 tokio = { version = "1", features = ["full"] }
 toml = { version = "0" }
 tracing = { version = "0" }
-vulkano = { version = "=0.29.0" }
-vulkano-shaders = { version = "=0.29.0" }
-vulkano-win = { version = "=0.29.0" }
-winit = { version = "=0.26" }
+vulkano = { version = "0" }
+vulkano-shaders = { version = "0" }
+vulkano-win = { version = "0" }
+winit = { version = "0" }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0", features = ["gui-helper"] }

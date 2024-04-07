@@ -1,5 +1,5 @@
 use amdgpu::pidfile::ports::Output;
-use egui::{Color32, Response, Sense, Stroke, Ui, Vec2};
+use egui::*;
 
 use crate::app::StatefulConfig;
 
@@ -18,7 +18,7 @@ impl<'output, 'stateful> egui::Widget for OutputWidget<'output, 'stateful> {
     fn ui(self, ui: &mut Ui) -> Response {
         let (rect, res) = ui.allocate_exact_size(Vec2::new(80.0, 80.0), Sense::click());
         if let Some(handle) = self.output.ty.and_then(|ty| self.state.textures.get(&ty)) {
-            ui.image(handle.id(), handle.size_vec2());
+            ui.image((handle.id(), handle.size_vec2()));
         } else {
             let painter = ui.painter();
             painter.rect_filled(rect, 0.0, Color32::DARK_RED);

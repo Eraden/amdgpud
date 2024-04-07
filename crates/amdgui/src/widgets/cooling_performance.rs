@@ -1,5 +1,3 @@
-use core::option::Option;
-use core::option::Option::Some;
 use std::collections::vec_deque::VecDeque;
 
 use amdmond_lib::AmdMon;
@@ -50,7 +48,7 @@ impl CoolingPerformance {
     }
 
     pub fn draw(&self, ui: &mut Ui, pid_files: &FanServices) {
-        use egui::plot::*;
+        use egui_plot::*;
 
         let current = self.data.iter().last().copied().unwrap_or_default();
 
@@ -58,9 +56,10 @@ impl CoolingPerformance {
             .data
             .iter()
             .enumerate()
-            .map(|(i, v)| Value::new(i as f64, *v));
+            .map(|(i, v)| [i as f64, *v])
+            .collect();
 
-        let curve = Line::new(Values::from_values_iter(iter)).color(Color32::BLUE);
+        let curve = Line::new(PlotPoints::new(iter)).color(Color32::BLUE);
         let zero = HLine::new(0.0).color(Color32::from_white_alpha(0));
         let optimal = HLine::new(45.0).name("Optimal").color(Color32::LIGHT_BLUE);
         let target = HLine::new(80.0)

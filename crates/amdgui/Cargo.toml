@@ -13,8 +13,9 @@ amdgpu = { path = "../amdgpu", version = "1", features = ["gui-helper"] }
 amdgpu-config = { path = "../amdgpu-config", version = "1", features = ["fan", "gui"] }
 amdmond-lib = { path = "../amdmond-lib", version = "1" }
 bytemuck = { version = "1" }
-egui = { version = "=0.18", features = [] }
-epi = { version = "0" }
+eframe = { workspace = true }
+egui = { workspace = true }
+egui_plot = { workspace = true }
 gumdrop = { version = "0" }
 image = { version = "=0.24.0", default-features = false, features = ['png'] }
 nix = { version = "0" }

@@ -4,7 +4,7 @@ use std::os::unix::net::{UnixListener, UnixStream};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use amdgpu::pidfile::ports::{sock_file, Command, Response, *};
+use amdgpu::pidfile::ports::*;
 use amdgpu::IoFailure;
 use tracing_subscriber::EnvFilter;
 
