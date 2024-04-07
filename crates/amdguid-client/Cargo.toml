@@ -22,17 +22,17 @@ amdguid = { path = "../amdgui", version = "1" }
 amdgpu = { path = "../amdgpu", version = "1", features = ["gui-helper"] }
 amdgpu-config = { path = "../amdgpu-config", version = "1", features = ["fan", "gui"] }
 amdmond-lib = { path = "../amdmond-lib", version = "1" }
-bytemuck = { version = "1" }
+bytemuck = { workspace = true }
 egui = { workspace = true }
 egui-winit = { workspace = true }
 emath = { workspace = true }
 eframe = { workspace = true }
-gumdrop = { version = "0" }
-nix = { version = "0" }
-serde = { version = "1", features = ["derive"] }
-thiserror = { version = "1" }
-tokio = { version = "1", features = ["full"] }
-toml = { version = "0" }
+gumdrop = { workspace = true }
+nix = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+toml = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
