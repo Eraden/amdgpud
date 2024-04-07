@@ -2,9 +2,10 @@ use std::collections::BTreeMap;
 
 use egui::epaint::ahash::AHashSet;
 use egui::epaint::Shadow;
-use egui::style::Margin;
 use egui::{Align, Color32, Direction, Frame, Layout, Rect, Response, Ui, Widget};
 
+// use egui::style::Margin;
+// use epaint::margin::Margin;
 use crate::items::PlotItem;
 use crate::widgets::legend::{Corner, Legend, LegendEntry};
 
@@ -92,12 +93,13 @@ impl Widget for &mut LegendWidget {
             .scope(|ui| {
                 // ui.style_mut().body_text_style = config.text_style;
                 let background_frame = Frame {
-                    inner_margin: Margin::symmetric(8.0, 4.0),
+                    // inner_margin: Margin::symmetric(8.0, 4.0),
                     outer_margin: Default::default(),
                     rounding: ui.style().visuals.window_rounding,
                     shadow: Shadow::default(),
                     fill: ui.style().visuals.extreme_bg_color,
                     stroke: ui.style().visuals.window_stroke(),
+                    ..Default::default()
                 }
                 .multiply_with_opacity(config.background_alpha);
                 background_frame

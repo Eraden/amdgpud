@@ -1,31 +1,39 @@
 [package]
-name = "amdguid"
-version = "1.0.12"
+name = "amdgui-client"
+version = "1.0.13"
 edition = "2018"
-description = "AMDGPU fan control service"
+description = "AMDGPU GUI client"
 license = "MIT OR Apache-2.0"
 keywords = ["hardware", "amdgpu"]
 categories = ["hardware-support"]
 repository = "https://github.com/Eraden/amdgpud"
+authors = ['Adrian Woźniak <adrian.wozniak@ita-prog.pl>']
+homepage = 'https://github.com/Eraden/amdgpud'
+
+[package.metadata]
+depends = ["amdgui-helper"]
+
+[[bin]]
+name = "agc"
+path = "./src/main.rs"
 
 [dependencies]
+amdguid = { path = "../amdgui", version = "1" }
 amdgpu = { path = "../amdgpu", version = "1", features = ["gui-helper"] }
 amdgpu-config = { path = "../amdgpu-config", version = "1", features = ["fan", "gui"] }
 amdmond-lib = { path = "../amdmond-lib", version = "1" }
 bytemuck = { version = "1" }
-eframe = { workspace = true }
 egui = { workspace = true }
-egui_plot = { workspace = true }
-epaint = { workspace = true }
+egui-winit = { workspace = true }
+emath = { workspace = true }
+eframe = { workspace = true }
 gumdrop = { version = "0" }
-image = { version = "=0.24.0", default-features = false, features = ['png'] }
 nix = { version = "0" }
-parking_lot = { version = "=0.12.1" }
 serde = { version = "1", features = ["derive"] }
+thiserror = { version = "1" }
 tokio = { version = "1", features = ["full"] }
 toml = { version = "0" }
-tracing = { version = "0" }
-tracing-subscriber = { version = "0.3.17", features = ['env-filter'] }
+tracing = { workspace = true }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0", features = ["gui-helper"] }
