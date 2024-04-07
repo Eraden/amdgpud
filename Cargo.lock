@@ -143,7 +143,7 @@ dependencies = [
  "gumdrop",
  "ron 0.1.7",
  "serde",
- "toml 0.5.11",
+ "toml",
  "tracing",
  "tui",
 ]
@@ -160,7 +160,7 @@ dependencies = [
  "ron 0.1.7",
  "serde",
  "tempdir",
- "toml 0.5.11",
+ "toml",
  "tracing",
  "tracing-subscriber",
 ]
@@ -176,26 +176,26 @@ dependencies = [
  "ron 0.7.1",
  "serde",
  "thiserror",
- "toml 0.5.11",
+ "toml",
  "tracing",
 ]
 
 [[package]]
 name = "amdgpu-config"
-version = "1.0.11"
+version = "1.0.14"
 dependencies = [
  "amdgpu",
  "csv",
  "gumdrop",
  "serde",
  "thiserror",
- "toml 0.5.11",
+ "toml",
  "tracing",
 ]
 
 [[package]]
 name = "amdgui-client"
-version = "1.0.13"
+version = "1.0.14"
 dependencies = [
  "amdgpu",
  "amdgpu-config",
@@ -211,13 +211,13 @@ dependencies = [
  "serde",
  "thiserror",
  "tokio",
- "toml 0.5.11",
+ "toml",
  "tracing",
 ]
 
 [[package]]
 name = "amdgui-helper"
-version = "1.0.10"
+version = "1.0.14"
 dependencies = [
  "amdgpu",
  "amdgpu-config",
@@ -229,14 +229,14 @@ dependencies = [
  "serde",
  "sudo",
  "thiserror",
- "toml 0.5.11",
+ "toml",
  "tracing",
  "tracing-subscriber",
 ]
 
 [[package]]
 name = "amdguid"
-version = "1.0.12"
+version = "1.0.14"
 dependencies = [
  "amdgpu",
  "amdgpu-config",
@@ -248,18 +248,18 @@ dependencies = [
  "epaint",
  "gumdrop",
  "image",
- "nix 0.28.0",
+ "nix 0.23.2",
  "parking_lot",
  "serde",
  "tokio",
- "toml 0.8.12",
+ "toml",
  "tracing",
  "tracing-subscriber",
 ]
 
 [[package]]
 name = "amdmond"
-version = "1.0.11"
+version = "1.0.14"
 dependencies = [
  "amdgpu",
  "amdgpu-config",
@@ -269,7 +269,7 @@ dependencies = [
  "eyra",
  "gumdrop",
  "serde",
- "toml 0.5.11",
+ "toml",
  "tracing",
  "tracing-subscriber",
 ]
@@ -285,13 +285,13 @@ dependencies = [
  "gumdrop",
  "serde",
  "thiserror",
- "toml 0.5.11",
+ "toml",
  "tracing",
 ]
 
 [[package]]
 name = "amdportsd"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "amdgpu",
  "eyra",
@@ -305,14 +305,14 @@ dependencies = [
 
 [[package]]
 name = "amdvold"
-version = "1.0.11"
+version = "1.0.14"
 dependencies = [
  "amdgpu",
  "amdgpu-config",
  "gumdrop",
  "serde",
  "thiserror",
- "toml 0.5.11",
+ "toml",
  "tracing",
  "tracing-subscriber",
 ]
@@ -2401,18 +2401,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nix"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab2156c4fce2f8df6c499cc1c763e4394b7482525bf2a9701c9d79d215f519e4"
-dependencies = [
- "bitflags 2.5.0",
- "cfg-if",
- "cfg_aliases",
- "libc",
-]
-
-[[package]]
 name = "nohash-hasher"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3218,15 +3206,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_spanned"
-version = "0.6.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb3622f419d1296904700073ea6cc23ad690adbd66f13ea683df73298736f0c1"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "sha1"
 version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3565,25 +3544,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "toml"
-version = "0.8.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9dd1545e8208b4a5af1aa9bbd0b4cf7e9ea08fabc5d0a5c67fcaafa17433aa3"
-dependencies = [
- "serde",
- "serde_spanned",
- "toml_datetime",
- "toml_edit 0.22.9",
-]
-
-[[package]]
 name = "toml_datetime"
 version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3550f4e9685620ac18a50ed434eb3aec30db8ba93b0287467bca5826ea25baf1"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "toml_edit"
@@ -3593,7 +3557,7 @@ checksum = "1b5bb770da30e5cbfde35a2d7b9b8a2c4b8ef89548a7a6aeab5c9a576e3e7421"
 dependencies = [
  "indexmap",
  "toml_datetime",
- "winnow 0.5.40",
+ "winnow",
 ]
 
 [[package]]
@@ -3604,20 +3568,7 @@ checksum = "6a8534fd7f78b5405e860340ad6575217ce99f38d4d5c8f2442cb5ecb50090e1"
 dependencies = [
  "indexmap",
  "toml_datetime",
- "winnow 0.5.40",
-]
-
-[[package]]
-name = "toml_edit"
-version = "0.22.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e40bb779c5187258fd7aad0eb68cb8706a0a81fa712fbea808ab43c4b8374c4"
-dependencies = [
- "indexmap",
- "serde",
- "serde_spanned",
- "toml_datetime",
- "winnow 0.6.5",
+ "winnow",
 ]
 
 [[package]]
@@ -4481,15 +4432,6 @@ name = "winnow"
 version = "0.5.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f593a95398737aeed53e489c785df13f3618e41dbcd6718c6addbf1395aa6876"
-dependencies = [
- "memchr",
-]
-
-[[package]]
-name = "winnow"
-version = "0.6.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dffa400e67ed5a4dd237983829e66475f0a4a26938c4b04c21baede6262215b8"
 dependencies = [
  "memchr",
 ]

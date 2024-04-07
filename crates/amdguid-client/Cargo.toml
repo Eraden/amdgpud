@@ -1,6 +1,6 @@
 [package]
 name = "amdgui-client"
-version = "1.0.13"
+version = "1.0.14"
 edition = "2018"
 description = "AMDGPU GUI client"
 license = "MIT OR Apache-2.0"

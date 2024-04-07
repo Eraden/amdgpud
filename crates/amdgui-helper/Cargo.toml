@@ -1,6 +1,6 @@
 [package]
 name = "amdgui-helper"
-version = "1.0.10"
+version = "1.0.14"
 edition = "2018"
 description = "AMDGPU fan control service"
 license = "MIT OR Apache-2.0"
