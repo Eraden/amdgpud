@@ -11,13 +11,13 @@ repository = "https://github.com/Eraden/amdgpud"
 [dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0.11" }
 amdgpu-config = { path = "../amdgpu-config", version = "1.0.10", features = ["monitor", "fan"] }
-chrono = { version = "0.4.19", features = ["serde"] }
-csv = { version = "1.1.6" }
-gumdrop = { version = "0.8.0" }
-serde = { version = "1.0.126", features = ["derive"] }
-thiserror = { version = "1.0.30" }
-toml = { version = "0.5.8" }
-tracing = { version = "0.1.37" }
+chrono = { workspace = true, features = ["serde"] }
+csv = { workspace = true }
+gumdrop = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+toml = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0" }

@@ -23,16 +23,16 @@ path = "./src/main.rs"
 [dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0.11", features = ["gui-helper"] }
 amdgpu-config = { path = "../amdgpu-config", version = "1.0.10", features = ["fan"] }
-gumdrop = { version = "0.8" }
-ron = { version = "0.1" }
-serde = { version = "1.0", features = ["derive"] }
-toml = { version = "0.5" }
-tracing = { version = "0.1.37" }
-tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
-onlyerror = { version = "0" }
-eyra = { version = "0", optional = true }
+eyra = { workspace = true, optional = true }
+gumdrop = { workspace = true }
+onlyerror = { workspace = true }
+ron = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+toml = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0" }
 amdgpu-config = { path = "../amdgpu-config", version = "1.0", features = ["fan"] }
-tempdir = "0.3.7"
+tempdir = { workspace = true }

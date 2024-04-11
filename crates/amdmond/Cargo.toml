@@ -24,14 +24,14 @@ static = ["eyra"]
 amdgpu = { path = "../amdgpu", version = "1.0.11" }
 amdgpu-config = { path = "../amdgpu-config", version = "1.0.10", features = ["monitor", "fan"] }
 amdmond-lib = { path = "../amdmond-lib", version = "1.0.10" }
-chrono = { version = "0.4.19", features = ["serde"] }
-csv = { version = "1.1.6" }
-gumdrop = { version = "0.8.0" }
-serde = { version = "1.0.126", features = ["derive"] }
-eyra = { version = "0.16.3", optional = true }
-toml = { version = "0.5.8" }
-tracing = { version = "0.1.37" }
-tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+chrono = { workspace = true, features = ["serde"] }
+csv = { workspace = true }
+eyra = { workspace = true, optional = true }
+gumdrop = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+toml = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
 
 [dev-dependencies]
 amdgpu = { path = "../amdgpu", version = "1.0" }
