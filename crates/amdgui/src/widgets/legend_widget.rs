@@ -88,17 +88,17 @@ impl Widget for &mut LegendWidget {
         let layout = Layout::from_main_dir_and_cross_align(main_dir, cross_align);
         let legend_pad = 4.0;
         let legend_rect = rect.shrink(legend_pad);
-        let mut legend_ui = ui.child_ui(legend_rect, layout);
+        let mut legend_ui = ui.child_ui(legend_rect, layout, None);
         legend_ui
             .scope(|ui| {
                 // ui.style_mut().body_text_style = config.text_style;
                 let background_frame = Frame {
                     // inner_margin: Margin::symmetric(8.0, 4.0),
                     outer_margin: Default::default(),
-                    rounding: ui.style().visuals.window_rounding,
                     shadow: Shadow::default(),
                     fill: ui.style().visuals.extreme_bg_color,
                     stroke: ui.style().visuals.window_stroke(),
+                    // rounding: ui.style().visuals.window_rounding,
                     ..Default::default()
                 }
                 .multiply_with_opacity(config.background_alpha);

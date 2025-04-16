@@ -1,6 +1,6 @@
 use std::ops::RangeInclusive;
 
-use egui::{pos2, Color32, Image, Rect, Shape, Stroke, TextureId, Ui, Vec2};
+use egui::{pos2, Color32, Image, Rect, Shape, Stroke, StrokeKind, TextureId, Ui, Vec2};
 
 use crate::items::plot_item::PlotItem;
 use crate::items::value::Value;
@@ -111,6 +111,7 @@ impl PlotItem for PlotImage {
                 rect,
                 0.0,
                 Stroke::new(1.0, ui.visuals().strong_text_color()),
+                StrokeKind::Inside,
             ));
         }
     }

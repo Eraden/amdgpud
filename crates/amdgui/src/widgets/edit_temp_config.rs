@@ -42,6 +42,7 @@ impl EditTempConfig {
                     max: pos2(available.width() / 2.0, available.height()),
                 },
                 Layout::left_to_right(Align::default()),
+                None,
             )
             .vertical(|ui| {
                 egui::ScrollArea::vertical()
@@ -121,6 +122,7 @@ impl EditTempConfig {
                     max: available.max,
                 },
                 Layout::left_to_right(Align::default()),
+                None,
             )
             .vertical(|ui| {
                 ui.add(TempConfigFile::new(self.config.clone(), &mut self.matrix));
