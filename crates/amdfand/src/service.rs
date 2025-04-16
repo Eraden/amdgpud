@@ -36,23 +36,24 @@ pub fn run(mut config: Config) -> crate::Result<()> {
             info!("  config reloaded");
             config_reloaded();
         }
-        for hw_mon in hw_mons.iter_mut() {
-            let speed = highest_speed(&config, hw_mon);
-
-            let last = *cache.entry(**hw_mon.card()).or_insert(-1_f64);
-
-            if (last - speed).abs() < 0.001f64 {
-                debug!("Speed should not change");
-                continue;
-            } else {
+        hw_mons
+            .iter_mut()
+            .map(|hw_mon| {
+                (
+                    hw_mon,
+                    highest_speed(&config, hw_mon),
+                    *cache.entry(**hw_mon.card()).or_insert(-1_f64),
+                )
+            })
+            .filter(|_, last, speed| (last - speed).abs() < 0.001f64)
+            .for_each(|(hw_mon, speed, last)| {
                 debug!("Changing speed to {speed:0.2}");
-            };
 
-            if let Err(e) = hw_mon.set_speed(speed) {
-                error!("Failed to change speed to {}. {:?}", speed, e);
-            }
-            cache.insert(**hw_mon.card(), speed);
-        }
+                if let Err(e) = hw_mon.set_speed(speed) {
+                    error!("Failed to change speed to {}. {:?}", speed, e);
+                }
+                cache.insert(**hw_mon.card(), speed);
+            });
         std::thread::sleep(std::time::Duration::from_millis(config.update_rate()));
     }
 }

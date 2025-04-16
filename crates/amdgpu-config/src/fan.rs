@@ -50,6 +50,8 @@ impl UsagePoint {
 pub struct Config {
     #[serde(skip)]
     path: String,
+    #[serde(default = "Config::default_monotonical")]
+    monotonical: bool,
     /// One of temperature inputs
     /// /sys/class/drm/card{X}/device/hwmon/hwmon{Y}/temp{Z}_input
     /// If nothing is provided higher reading will be taken (this is not good!)
@@ -228,6 +230,10 @@ impl Config {
             },
         ]
     }
+
+    fn default_monotonical() -> bool {
+        true
+    }
 }
 
 impl Default for Config {
@@ -236,6 +242,7 @@ impl Default for Config {
             path: String::from(DEFAULT_FAN_CONFIG_PATH),
             #[allow(deprecated)]
             cards: None,
+            monotonical: true,
             log_level: LogLevel::Error,
             temp_matrix: Self::default_temp_matrix(),
             temp_input: Some(TempInput(1)),
@@ -275,56 +282,55 @@ pub fn load_config(config_path: &str) -> Result<Config, ConfigError> {
     let mut config = ensure_config::<Config, ConfigError, _>(config_path)?;
     config.path = String::from(config_path);
 
-    let mut last_point: Option<&TempPoint> = None;
+    let monotonical = config.monotonical;
 
-    for (index, matrix_point) in config.temp_matrix.iter().enumerate() {
-        if matrix_point.speed < 0f64 {
-            error!("Fan speed can't be below 0.0 found {}", matrix_point.speed);
-            return Err(ConfigError::FanSpeedTooLow {
-                value: matrix_point.speed,
-                index,
-            });
-        }
-        if matrix_point.speed > 100f64 {
-            error!(
-                "Fan speed can't be above 100.0 found {}",
-                matrix_point.speed
-            );
-            return Err(ConfigError::FanSpeedTooHigh {
-                value: matrix_point.speed,
-                index,
-            });
-        }
-        if let Some(last_point) = last_point {
-            if matrix_point.speed < last_point.speed {
+    config.temp_matrix.iter().enumerate().try_fold(
+        Option::<&TempPoint>::None,
+        |last_point, (index, matrix_point)| match (matrix_point.speed, last_point) {
+            (f, _) if f < 0.0f64 => {
+                error!("Fan speed can't be below 0.0 found {}", matrix_point.speed);
+                Err(ConfigError::FanSpeedTooLow {
+                    value: matrix_point.speed,
+                    index,
+                })
+            }
+            (f, _) if f > 100f64 => {
+                error!(
+                    "Fan speed can't be above 100.0 found {}",
+                    matrix_point.speed
+                );
+                Err(ConfigError::FanSpeedTooHigh {
+                    value: matrix_point.speed,
+                    index,
+                })
+            }
+            (current, Some(last)) if monotonical && current < last.speed => {
                 error!(
                     "Curve fan speeds should be monotonically increasing, found {} then {}",
-                    last_point.speed, matrix_point.speed
+                    last.speed, matrix_point.speed
                 );
 
-                return Err(ConfigError::UnsortedFanSpeed {
+                Err(ConfigError::UnsortedFanSpeed {
                     current: matrix_point.speed,
-                    last: last_point.speed,
+                    last: last.speed,
                     index,
-                });
+                })
             }
-            if matrix_point.temp < last_point.temp {
+            (current, Some(last)) if monotonical && current < last.temp => {
                 error!(
                     "Curve fan temps should be monotonically increasing, found {} then {}",
-                    last_point.temp, matrix_point.temp
+                    last.temp, matrix_point.temp
                 );
 
-                return Err(ConfigError::UnsortedFanTemp {
+                Err(ConfigError::UnsortedFanTemp {
                     current: matrix_point.temp,
-                    last: last_point.temp,
+                    last: last.temp,
                     index,
-                });
+                })
             }
-        }
-
-        last_point = Some(matrix_point)
-    }
-
+            _ => Ok(Some(matrix_point)),
+        },
+    )?;
     Ok(config)
 }
 
