@@ -30,6 +30,7 @@ impl<'output, 'stateful> egui::Widget for OutputWidget<'output, 'stateful> {
                     width: 1.0,
                     color: Color32::GREEN,
                 },
+                StrokeKind::Inside,
             );
 
             let rect_middle_point = (rect.max - rect.min) / 2.0;

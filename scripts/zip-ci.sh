@@ -40,9 +40,7 @@ build_tag_gz amdfand
 build_tag_gz amdmond
 build_tag_gz amdvold
 
-tar_gui amdguid-wayland
-tar_gui amdguid-glium
-tar_gui amdguid-glow
+tar_gui agc
 
 cd ${ROOT}/tmp
 

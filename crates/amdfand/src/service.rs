@@ -38,15 +38,11 @@ pub fn run(mut config: Config) -> crate::Result<()> {
         }
         for hw_mon in hw_mons.iter_mut() {
             let speed = highest_speed(&config, hw_mon);
-
             let last = *cache.entry(**hw_mon.card()).or_insert(-1_f64);
-
             if (last - speed).abs() < 0.001f64 {
-                debug!("Speed should not change");
                 continue;
-            } else {
-                debug!("Changing speed to {speed:0.2}");
-            };
+            }
+            debug!("Changing speed to {speed:0.2}");
 
             if let Err(e) = hw_mon.set_speed(speed) {
                 error!("Failed to change speed to {}. {:?}", speed, e);

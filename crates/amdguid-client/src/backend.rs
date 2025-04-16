@@ -10,7 +10,7 @@ pub fn run_app(amd_gui: Arc<Mutex<AmdGui>>, _receiver: UnboundedReceiver<bool>) 
         eframe::NativeOptions {
             ..Default::default()
         },
-        Box::new(|_cc| Box::new(MyApp { amd_gui })),
+        Box::new(|_cc| Ok(Box::new(MyApp { amd_gui }))),
     )
     .expect("AMD GUID failed");
 }

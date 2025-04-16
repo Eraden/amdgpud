@@ -12,6 +12,7 @@ pub fn create_ui(amd_gui: Arc<Mutex<AmdGui>>, ctx: &egui::Context) {
         let mut child = ui.child_ui(
             ui.available_rect_before_wrap(),
             Layout::left_to_right(Align::default()),
+            None,
         );
 
         if child

@@ -1,9 +1,6 @@
 use egui::epaint::ahash::AHashSet;
 use egui::epaint::{Hsva, RectShape};
-use egui::{
-    vec2, Color32, CursorIcon, Id, NumExt, PointerButton, Rect, Response, Rounding, Sense,
-    TextureId, Ui, Vec2,
-};
+use egui::{vec2, Color32, CursorIcon, Id, NumExt, PointerButton, Response, Sense, Ui, Vec2};
 
 use crate::items::*;
 use crate::transform::{Bounds, ScreenTransform};
@@ -294,11 +291,14 @@ where
 
         plot_painter.add(RectShape {
             rect,
-            rounding: Rounding::from(2.0),
+            corner_radius: egui::CornerRadius::from(2.0),
             fill: ui.visuals().extreme_bg_color,
             stroke: ui.visuals().widgets.noninteractive.bg_stroke,
-            fill_texture_id: TextureId::default(),
-            uv: Rect::EVERYTHING,
+            stroke_kind: egui::StrokeKind::Inside,
+            round_to_pixels: None,
+            blur_width: 0.1,
+            brush: None,
+            // fill_texture_id: TextureId::default(),
         });
 
         // Legend

@@ -1,6 +1,6 @@
 use std::ops::RangeInclusive;
 
-use egui::{Align2, Color32, Rect, Shape, Stroke, TextStyle, Ui};
+use egui::{Align2, Color32, Rect, Shape, Stroke, StrokeKind, TextStyle, Ui};
 
 use crate::items::plot_item::PlotItem;
 use crate::items::value::Value;
@@ -95,6 +95,7 @@ impl PlotItem for Text {
                 rect.expand(2.0),
                 1.0,
                 Stroke::new(0.5, color),
+                StrokeKind::Inside,
             ));
         }
     }

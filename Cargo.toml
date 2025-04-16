@@ -6,9 +6,6 @@ members = [
     "crates/amdgpu-config",
     "crates/amdgui",
     "crates/amdgui-helper",
-    # "crates/amdguid-glow",
-    # "crates/amdguid-glium",
-    # "crates/amdguid-wayland",
     "crates/amdguid-client",
     "crates/amdmond",
     "crates/amdmond-lib",
@@ -18,12 +15,13 @@ members = [
 resolver = "2"
 
 [workspace.dependencies]
-egui = { version = "0.27.2" }
-egui_plot = { version = "0.27.2" }
-emath = { version = "0.27.2" }
-epaint = { version = "0.27.2" }
-egui-winit = { version = "0.27.2", default-features = false }
-eframe = { version = "0.27.2" }
+egui = { version = "0.31" }
+egui_plot = { version = "0.31" }
+emath = { version = "0.31" }
+epaint = { version = "0.31" }
+egui-winit = { version = "0.31" }
+winit = { version = "0.30.9", features = ["x11", "wayland"] }
+eframe = { version = "0.31" }
 tracing = { version = "^0.1.37" }
 bytemuck = "1"
 chrono = "0.4.19"

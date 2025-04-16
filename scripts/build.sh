@@ -30,6 +30,4 @@ function build() {
   cd ${ROOT}
 }
 
-build amdguid-glium
-build amdguid-glow
-build amdguid-wayland
+build agc

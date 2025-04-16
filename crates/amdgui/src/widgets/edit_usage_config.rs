@@ -42,6 +42,7 @@ impl EditUsageConfig {
                     max: pos2(available.width() / 2.0, available.height()),
                 },
                 Layout::left_to_right(Align::default()),
+                None,
             )
             .vertical(|ui| {
                 egui::ScrollArea::vertical()
@@ -122,6 +123,7 @@ impl EditUsageConfig {
                     max: available.max,
                 },
                 Layout::left_to_right(Align::default()),
+                None,
             )
             .vertical(|ui| {
                 ui.add(UsageConfigFile::new(self.config.clone()));

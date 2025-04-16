@@ -26,14 +26,10 @@ cargo build --release --bin amdgui-helper
 
 if command -v cargo-chef
 then
-    cargo chef cook --release --recipe-path recipe.json --bin amdguid-wayland
-    cargo chef cook --release --recipe-path recipe.json --bin amdguid-glium
-    cargo chef cook --release --recipe-path recipe.json --bin amdguid-glow
+    cargo chef cook --release --recipe-path recipe.json --bin agc
     cargo chef cook --release --recipe-path recipe.json --bin amdvold
 else
-    cargo build --release --bin amdguid-wayland
-    cargo build --release --bin amdguid-glium
-    cargo build --release --bin amdguid-glow
+    cargo build --release --bin agc
     cargo build --release --bin amdvold
 fi
 
